@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Search, Bot, BrainCircuit, Car, CaseSensitive, Image, MapPin, Settings, Shield, User, UserCircle, Users, Video } from "lucide-react";
+import { Bell, Search, Bot } from "lucide-react";
 import React from "react";
 
 const ListItem = React.forwardRef<
@@ -110,44 +110,52 @@ const navLinks = [
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center">
+      <div className="container flex h-16 max-w-screen-2xl items-center relative">
         <Link to="/" className="mr-6 flex items-center space-x-2">
           <Bot className="h-6 w-6 text-primary" />
           <span className="font-bold sm:inline-block">CitySense</span>
         </Link>
-        <div className="flex-1 overflow-x-auto whitespace-nowrap">
-          <NavigationMenu>
-            <NavigationMenuList>
-              {navLinks.map((link) =>
-                link.isSingle ? (
-                  <NavigationMenuItem key={link.trigger}>
-                    <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
-                      {link.trigger}
-                    </NavLink>
-                  </NavigationMenuItem>
-                ) : (
-                  <NavigationMenuItem key={link.trigger}>
-                    <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                        {link.items.map((item) => (
-                           <ListItem
-                            key={item.title}
-                            title={item.title}
-                            href={item.href}
-                          >
-                            {item.description}
-                          </ListItem>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                )
-              )}
-            </NavigationMenuList>
-          </NavigationMenu>
+        {/* Navigation bar wrapper, NOT horizontally scrollable itself */}
+        <div className="relative flex-1">
+          {/* Scrollable link list only */}
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-accent/50 scrollbar-track-transparent whitespace-nowrap pr-4" style={{ WebkitOverflowScrolling: "touch" }}>
+            <NavigationMenu>
+              <NavigationMenuList className="min-w-max">
+                {navLinks.map((link) =>
+                  link.isSingle ? (
+                    <NavigationMenuItem key={link.trigger}>
+                      <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
+                        {link.trigger}
+                      </NavLink>
+                    </NavigationMenuItem>
+                  ) : (
+                    <NavigationMenuItem key={link.trigger} className="relative">
+                      <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
+                      {/* Menu content: absolutely positioned, not clipped by scroll, high z-index */}
+                      <NavigationMenuContent
+                        className="absolute left-0 top-full z-[110] min-w-[340px] w-fit md:w-[500px] lg:w-[600px] bg-popover shadow-lg border rounded-md"
+                        style={{ minWidth: 340, maxWidth: 700 }}
+                      >
+                        <ul className="grid w-full gap-3 p-4 md:grid-cols-2">
+                          {link.items.map((item) => (
+                            <ListItem
+                              key={item.title}
+                              title={item.title}
+                              href={item.href}
+                            >
+                              {item.description}
+                            </ListItem>
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  )
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
         </div>
-
+        {/* Right toolbar */}
         <div className="flex items-center justify-end space-x-4 ml-6">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
