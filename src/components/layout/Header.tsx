@@ -1,3 +1,4 @@
+
 import { Link, NavLink } from "react-router-dom";
 import {
   NavigationMenu,
@@ -114,38 +115,40 @@ const Header = () => {
           <Bot className="h-6 w-6 text-primary" />
           <span className="font-bold sm:inline-block">CitySense</span>
         </Link>
-        <NavigationMenu>
-          <NavigationMenuList>
-            {navLinks.map((link) =>
-              link.isSingle ? (
-                <NavigationMenuItem key={link.trigger}>
-                  <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
-                    {link.trigger}
-                  </NavLink>
-                </NavigationMenuItem>
-              ) : (
-                <NavigationMenuItem key={link.trigger}>
-                  <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                      {link.items.map((item) => (
-                         <ListItem
-                          key={item.title}
-                          title={item.title}
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              )
-            )}
-          </NavigationMenuList>
-        </NavigationMenu>
+        <div className="flex-1 overflow-x-auto whitespace-nowrap">
+          <NavigationMenu>
+            <NavigationMenuList>
+              {navLinks.map((link) =>
+                link.isSingle ? (
+                  <NavigationMenuItem key={link.trigger}>
+                    <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
+                      {link.trigger}
+                    </NavLink>
+                  </NavigationMenuItem>
+                ) : (
+                  <NavigationMenuItem key={link.trigger}>
+                    <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                        {link.items.map((item) => (
+                           <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )
+              )}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex items-center justify-end space-x-4 ml-6">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search modules or profiles..." className="pl-9" />
