@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Search, Bot } from "lucide-react";
+import { Bell, Search, Bot, BrainCircuit, Car, CaseSensitive, Image, MapPin, Settings, Shield, User, UserCircle, Users, Video } from "lucide-react";
 import React from "react";
 
 const ListItem = React.forwardRef<
@@ -38,124 +38,115 @@ const ListItem = React.forwardRef<
 });
 ListItem.displayName = "ListItem";
 
-// Update all links to actual routes (not "#")
 const navLinks = [
-  {
-    trigger: "Dashboard",
-    isSingle: true,
-    href: "/",
-    items: [],
-  },
-  {
-    trigger: "Surveillance",
-    items: [
-      { title: "Facial Recognition", href: "/surveillance/facial-recognition", description: "Real-time face detection and identification." },
-      { title: "Object Detection", href: "/surveillance/object-detection", description: "Identify and log objects in feeds." },
-      { title: "In/Out Count", href: "/surveillance/in-out-count", description: "Monitor entries and exits." },
-      { title: "Border Jumping", href: "/surveillance/border-jumping", description: "Detect boundary breaches." },
-    ],
-  },
-  {
-    trigger: "Vehicle Intelligence",
-    items: [
-      { title: "ANPR", href: "/vehicle-intelligence/anpr", description: "Automatic Number Plate Recognition." },
-      { title: "Vehicle Tracking", href: "/vehicle-intelligence/tracking", description: "Track vehicle movement." },
-    ],
-  },
-  {
-    trigger: "Camera Management",
-    items: [
-      { title: "Map View", href: "/camera-management/map", description: "Visualize cameras on a map." },
-      { title: "Add Camera", href: "/camera-management/add", description: "Register a new camera." },
-      { title: "Test Camera", href: "/camera-management/test", description: "Check camera feed." },
-      { title: "Camera Status", href: "/camera-management/status", description: "View online/offline status." },
-    ],
-  },
-  {
-    trigger: "Image Analysis",
-    items: [
-      { title: "Image Difference", href: "/image-analysis/difference", description: "Compare two images for changes." },
-      { title: "Motion Analysis", href: "/image-analysis/motion", description: "Analyze motion in video clips." },
-    ],
-  },
-  {
-    trigger: "Profiling & Identity",
-    items: [
-      { title: "Profile Management", href: "/profiling/management", description: "Manage user and suspect profiles." },
-      { title: "Add New Profile", href: "/profiling/add", description: "Create a new identity profile." },
-    ],
-  },
-  {
-    trigger: "Model Management",
-    items: [
-      { title: "Train New Model", href: "/model-management/train", description: "Train AI models with new data." },
-      { title: "List Models", href: "/model-management/list", description: "View and deploy trained models." },
-    ],
-  },
-  {
-    trigger: "User Management",
-    items: [
-      { title: "User List", href: "/user-management/list", description: "Manage application users." },
-      { title: "Permissions", href: "/user-management/permissions", description: "Assign roles and permissions." },
-    ],
-  },
-  {
-    trigger: "Settings",
-    items: [
-      { title: "System Preferences", href: "/settings/preferences", description: "Configure system-wide settings." },
-      { title: "Notifications", href: "/settings/notifications", description: "Manage alert notifications." },
-    ],
-  },
+    {
+      trigger: "Dashboard",
+      isSingle: true,
+      href: "/",
+      items: [],
+    },
+    {
+        trigger: "Surveillance",
+        items: [
+            { title: "Facial Recognition", href: "#", description: "Real-time face detection and identification." },
+            { title: "Object Detection", href: "#", description: "Identify and log objects in feeds." },
+            { title: "In/Out Count", href: "#", description: "Monitor entries and exits." },
+            { title: "Border Jumping", href: "#", description: "Detect boundary breaches." },
+        ],
+    },
+    {
+        trigger: "Vehicle Intelligence",
+        items: [
+            { title: "ANPR", href: "#", description: "Automatic Number Plate Recognition." },
+            { title: "Vehicle Tracking", href: "#", description: "Track vehicle movement." },
+        ],
+    },
+    {
+        trigger: "Camera Management",
+        items: [
+            { title: "Map View", href: "#", description: "Visualize cameras on a map." },
+            { title: "Add Camera", href: "#", description: "Register a new camera." },
+            { title: "Test Camera", href: "#", description: "Check camera feed." },
+            { title: "Camera Status", href: "/camera-management/status", description: "View online/offline status." },
+        ],
+    },
+    {
+        trigger: "Image Analysis",
+        items: [
+            { title: "Image Difference", href: "#", description: "Compare two images for changes." },
+            { title: "Motion Analysis", href: "#", description: "Analyze motion in video clips." },
+        ],
+    },
+    {
+        trigger: "Profiling & Identity",
+        items: [
+            { title: "Profile Management", href: "#", description: "Manage user and suspect profiles." },
+            { title: "Add New Profile", href: "#", description: "Create a new identity profile." },
+        ],
+    },
+    {
+        trigger: "Model Management",
+        items: [
+            { title: "Train New Model", href: "#", description: "Train AI models with new data." },
+            { title: "List Models", href: "#", description: "View and deploy trained models." },
+        ],
+    },
+    {
+        trigger: "User Management",
+        items: [
+            { title: "User List", href: "#", description: "Manage application users." },
+            { title: "Permissions", href: "#", description: "Assign roles and permissions." },
+        ],
+    },
+     {
+        trigger: "Settings",
+        items: [
+            { title: "System Preferences", href: "#", description: "Configure system-wide settings." },
+            { title: "Notifications", href: "#", description: "Manage alert notifications." },
+        ],
+    },
 ];
 
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center relative">
+      <div className="container flex h-16 max-w-screen-2xl items-center">
         <Link to="/" className="mr-6 flex items-center space-x-2">
           <Bot className="h-6 w-6 text-primary" />
           <span className="font-bold sm:inline-block">CitySense</span>
         </Link>
-        {/* Make only menu scroll, fix dropdown overlap with scroll */}
-        <div className="relative flex-1">
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-accent/50 scrollbar-track-transparent whitespace-nowrap pr-4"
-            style={{ WebkitOverflowScrolling: "touch", maxWidth: "100%" }}>
-            <NavigationMenu>
-              <NavigationMenuList className="min-w-max">
-                {navLinks.map((link) =>
-                  link.isSingle ? (
-                    <NavigationMenuItem key={link.trigger}>
-                      <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
-                        {link.trigger}
-                      </NavLink>
-                    </NavigationMenuItem>
-                  ) : (
-                    <NavigationMenuItem key={link.trigger} className="relative">
-                      <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
-                      <NavigationMenuContent
-                        className="absolute left-0 top-full z-50 min-w-[340px] w-fit md:w-[500px] lg:w-[600px] bg-popover shadow-lg border rounded-md"
-                        style={{ minWidth: 340, maxWidth: 700 }}>
-                        <ul className="grid w-full gap-3 p-4 md:grid-cols-2">
-                          {link.items.map((item) => (
-                            <ListItem
-                              key={item.title}
-                              title={item.title}
-                              href={item.href}
-                            >
-                              {item.description}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  )
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div>
-        </div>
-        {/* Right toolbar */}
-        <div className="flex items-center justify-end space-x-4 ml-6">
+        <NavigationMenu>
+          <NavigationMenuList>
+            {navLinks.map((link) =>
+              link.isSingle ? (
+                <NavigationMenuItem key={link.trigger}>
+                  <NavLink to={link.href!} className={navigationMenuTriggerStyle()}>
+                    {link.trigger}
+                  </NavLink>
+                </NavigationMenuItem>
+              ) : (
+                <NavigationMenuItem key={link.trigger}>
+                  <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                      {link.items.map((item) => (
+                         <ListItem
+                          key={item.title}
+                          title={item.title}
+                          href={item.href}
+                        >
+                          {item.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              )
+            )}
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search modules or profiles..." className="pl-9" />
