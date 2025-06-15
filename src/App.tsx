@@ -8,6 +8,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MainLayout from "./components/layout/MainLayout";
 import CameraStatus from "./pages/camera-management/CameraStatus";
+import FacialRecognition from "./pages/surveillance/FacialRecognition";
+import ObjectDetection from "./pages/surveillance/ObjectDetection";
+import InOutCount from "./pages/surveillance/InOutCount";
+import BorderJumping from "./pages/surveillance/BorderJumping";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +24,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<MainLayout><Index /></MainLayout>} />
           <Route path="/camera-management/status" element={<MainLayout><CameraStatus /></MainLayout>} />
+          
+          {/* Surveillance Routes */}
+          <Route path="/surveillance/facial-recognition" element={<MainLayout><FacialRecognition /></MainLayout>} />
+          <Route path="/surveillance/object-detection" element={<MainLayout><ObjectDetection /></MainLayout>} />
+          <Route path="/surveillance/in-out-count" element={<MainLayout><InOutCount /></MainLayout>} />
+          <Route path="/surveillance/border-jumping" element={<MainLayout><BorderJumping /></MainLayout>} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

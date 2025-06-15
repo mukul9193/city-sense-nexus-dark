@@ -1,4 +1,3 @@
-
 import { Link, NavLink } from "react-router-dom";
 import {
   NavigationMenu,
@@ -48,10 +47,10 @@ const navLinks = [
     {
         trigger: "Surveillance",
         items: [
-            { title: "Facial Recognition", href: "#", description: "Real-time face detection and identification." },
-            { title: "Object Detection", href: "#", description: "Identify and log objects in feeds." },
-            { title: "In/Out Count", href: "#", description: "Monitor entries and exits." },
-            { title: "Border Jumping", href: "#", description: "Detect boundary breaches." },
+            { title: "Facial Recognition", href: "/surveillance/facial-recognition", description: "Real-time face detection and identification." },
+            { title: "Object Detection", href: "/surveillance/object-detection", description: "Identify and log objects in feeds." },
+            { title: "In/Out Count", href: "/surveillance/in-out-count", description: "Monitor entries and exits." },
+            { title: "Border Jumping", href: "/surveillance/border-jumping", description: "Detect boundary breaches." },
         ],
     },
     {
