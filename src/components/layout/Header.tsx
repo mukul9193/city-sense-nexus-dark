@@ -38,73 +38,74 @@ const ListItem = React.forwardRef<
 });
 ListItem.displayName = "ListItem";
 
+// Update all links to actual routes (not "#")
 const navLinks = [
-    {
-      trigger: "Dashboard",
-      isSingle: true,
-      href: "/",
-      items: [],
-    },
-    {
-        trigger: "Surveillance",
-        items: [
-            { title: "Facial Recognition", href: "/surveillance/facial-recognition", description: "Real-time face detection and identification." },
-            { title: "Object Detection", href: "/surveillance/object-detection", description: "Identify and log objects in feeds." },
-            { title: "In/Out Count", href: "/surveillance/in-out-count", description: "Monitor entries and exits." },
-            { title: "Border Jumping", href: "/surveillance/border-jumping", description: "Detect boundary breaches." },
-        ],
-    },
-    {
-        trigger: "Vehicle Intelligence",
-        items: [
-            { title: "ANPR", href: "#", description: "Automatic Number Plate Recognition." },
-            { title: "Vehicle Tracking", href: "#", description: "Track vehicle movement." },
-        ],
-    },
-    {
-        trigger: "Camera Management",
-        items: [
-            { title: "Map View", href: "#", description: "Visualize cameras on a map." },
-            { title: "Add Camera", href: "#", description: "Register a new camera." },
-            { title: "Test Camera", href: "#", description: "Check camera feed." },
-            { title: "Camera Status", href: "/camera-management/status", description: "View online/offline status." },
-        ],
-    },
-    {
-        trigger: "Image Analysis",
-        items: [
-            { title: "Image Difference", href: "#", description: "Compare two images for changes." },
-            { title: "Motion Analysis", href: "#", description: "Analyze motion in video clips." },
-        ],
-    },
-    {
-        trigger: "Profiling & Identity",
-        items: [
-            { title: "Profile Management", href: "#", description: "Manage user and suspect profiles." },
-            { title: "Add New Profile", href: "#", description: "Create a new identity profile." },
-        ],
-    },
-    {
-        trigger: "Model Management",
-        items: [
-            { title: "Train New Model", href: "#", description: "Train AI models with new data." },
-            { title: "List Models", href: "#", description: "View and deploy trained models." },
-        ],
-    },
-    {
-        trigger: "User Management",
-        items: [
-            { title: "User List", href: "#", description: "Manage application users." },
-            { title: "Permissions", href: "#", description: "Assign roles and permissions." },
-        ],
-    },
-     {
-        trigger: "Settings",
-        items: [
-            { title: "System Preferences", href: "#", description: "Configure system-wide settings." },
-            { title: "Notifications", href: "#", description: "Manage alert notifications." },
-        ],
-    },
+  {
+    trigger: "Dashboard",
+    isSingle: true,
+    href: "/",
+    items: [],
+  },
+  {
+    trigger: "Surveillance",
+    items: [
+      { title: "Facial Recognition", href: "/surveillance/facial-recognition", description: "Real-time face detection and identification." },
+      { title: "Object Detection", href: "/surveillance/object-detection", description: "Identify and log objects in feeds." },
+      { title: "In/Out Count", href: "/surveillance/in-out-count", description: "Monitor entries and exits." },
+      { title: "Border Jumping", href: "/surveillance/border-jumping", description: "Detect boundary breaches." },
+    ],
+  },
+  {
+    trigger: "Vehicle Intelligence",
+    items: [
+      { title: "ANPR", href: "/vehicle-intelligence/anpr", description: "Automatic Number Plate Recognition." },
+      { title: "Vehicle Tracking", href: "/vehicle-intelligence/tracking", description: "Track vehicle movement." },
+    ],
+  },
+  {
+    trigger: "Camera Management",
+    items: [
+      { title: "Map View", href: "/camera-management/map", description: "Visualize cameras on a map." },
+      { title: "Add Camera", href: "/camera-management/add", description: "Register a new camera." },
+      { title: "Test Camera", href: "/camera-management/test", description: "Check camera feed." },
+      { title: "Camera Status", href: "/camera-management/status", description: "View online/offline status." },
+    ],
+  },
+  {
+    trigger: "Image Analysis",
+    items: [
+      { title: "Image Difference", href: "/image-analysis/difference", description: "Compare two images for changes." },
+      { title: "Motion Analysis", href: "/image-analysis/motion", description: "Analyze motion in video clips." },
+    ],
+  },
+  {
+    trigger: "Profiling & Identity",
+    items: [
+      { title: "Profile Management", href: "/profiling/management", description: "Manage user and suspect profiles." },
+      { title: "Add New Profile", href: "/profiling/add", description: "Create a new identity profile." },
+    ],
+  },
+  {
+    trigger: "Model Management",
+    items: [
+      { title: "Train New Model", href: "/model-management/train", description: "Train AI models with new data." },
+      { title: "List Models", href: "/model-management/list", description: "View and deploy trained models." },
+    ],
+  },
+  {
+    trigger: "User Management",
+    items: [
+      { title: "User List", href: "/user-management/list", description: "Manage application users." },
+      { title: "Permissions", href: "/user-management/permissions", description: "Assign roles and permissions." },
+    ],
+  },
+  {
+    trigger: "Settings",
+    items: [
+      { title: "System Preferences", href: "/settings/preferences", description: "Configure system-wide settings." },
+      { title: "Notifications", href: "/settings/notifications", description: "Manage alert notifications." },
+    ],
+  },
 ];
 
 const Header = () => {
@@ -115,10 +116,10 @@ const Header = () => {
           <Bot className="h-6 w-6 text-primary" />
           <span className="font-bold sm:inline-block">CitySense</span>
         </Link>
-        {/* Navigation bar wrapper, NOT horizontally scrollable itself */}
+        {/* Make only menu scroll, fix dropdown overlap with scroll */}
         <div className="relative flex-1">
-          {/* Scrollable link list only */}
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-accent/50 scrollbar-track-transparent whitespace-nowrap pr-4" style={{ WebkitOverflowScrolling: "touch" }}>
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-accent/50 scrollbar-track-transparent whitespace-nowrap pr-4"
+            style={{ WebkitOverflowScrolling: "touch", maxWidth: "100%" }}>
             <NavigationMenu>
               <NavigationMenuList className="min-w-max">
                 {navLinks.map((link) =>
@@ -131,11 +132,9 @@ const Header = () => {
                   ) : (
                     <NavigationMenuItem key={link.trigger} className="relative">
                       <NavigationMenuTrigger>{link.trigger}</NavigationMenuTrigger>
-                      {/* Menu content: absolutely positioned, not clipped by scroll, high z-index */}
                       <NavigationMenuContent
-                        className="absolute left-0 top-full z-[110] min-w-[340px] w-fit md:w-[500px] lg:w-[600px] bg-popover shadow-lg border rounded-md"
-                        style={{ minWidth: 340, maxWidth: 700 }}
-                      >
+                        className="absolute left-0 top-full z-50 min-w-[340px] w-fit md:w-[500px] lg:w-[600px] bg-popover shadow-lg border rounded-md"
+                        style={{ minWidth: 340, maxWidth: 700 }}>
                         <ul className="grid w-full gap-3 p-4 md:grid-cols-2">
                           {link.items.map((item) => (
                             <ListItem
