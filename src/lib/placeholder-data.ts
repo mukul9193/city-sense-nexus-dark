@@ -98,6 +98,26 @@ export const faceRecognitionEvents: FaceRecognitionEvent[] = [
     location: 'Metro Station Platform 2',
     photoUrl: '/placeholder.svg',
     status: 'Authorized'
+  },
+  {
+    id: 'FR-004',
+    personId: 'P-004',
+    name: 'Mike Johnson',
+    confidence: 88,
+    timestamp: '2025-06-15 09:45:00',
+    location: 'City Hall Entrance',
+    photoUrl: '/placeholder.svg',
+    status: 'Authorized'
+  },
+  {
+    id: 'FR-005',
+    personId: 'P-005',
+    name: 'Sarah Wilson',
+    confidence: 93,
+    timestamp: '2025-06-15 09:30:00',
+    location: 'Port Authority Gate 1',
+    photoUrl: '/placeholder.svg',
+    status: 'Watchlist'
   }
 ];
 
@@ -110,3 +130,18 @@ export const faceRecognitionStats = [
   { month: 'Jun', detections: 2100, matches: 89 }
 ];
 
+export const faceRecognitionStatusData = [
+  { name: 'Authorized', value: 65, fill: '#22c55e' },
+  { name: 'Unknown', value: 25, fill: '#eab308' },
+  { name: 'Watchlist', value: 10, fill: '#ef4444' }
+];
+
+export const dailyDetectionTrends = [
+  { time: '00:00', detections: 12 },
+  { time: '04:00', detections: 8 },
+  { time: '08:00', detections: 45 },
+  { time: '12:00', detections: 67 },
+  { time: '16:00', detections: 89 },
+  { time: '20:00', detections: 56 },
+  { time: '23:59', detections: 23 }
+];
