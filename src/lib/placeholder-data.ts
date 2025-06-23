@@ -1,5 +1,5 @@
 
-import { Camera, ModuleCardData, DetectionEvent } from './types';
+import { Camera, ModuleCardData, DetectionEvent, FaceRecognitionEvent } from './types';
 import { Video, Shield, Car, CaseSensitive, UserCircle, Bot, Users, Settings, MapPin, Image, BrainCircuit, UsersRound } from 'lucide-react';
 
 export const cameras: Camera[] = [
@@ -67,3 +67,46 @@ export const recentDetections: DetectionEvent[] = [
     cameraId: 'CAM-006'
   }
 ];
+
+export const faceRecognitionEvents: FaceRecognitionEvent[] = [
+  {
+    id: 'FR-001',
+    personId: 'P-001',
+    name: 'John Doe',
+    confidence: 95,
+    timestamp: '2025-06-15 10:25:00',
+    location: 'Downtown Square Cam',
+    photoUrl: '/placeholder.svg',
+    status: 'Watchlist'
+  },
+  {
+    id: 'FR-002',
+    personId: 'P-002',
+    name: 'Unknown Person',
+    confidence: 87,
+    timestamp: '2025-06-15 10:20:00',
+    location: 'Central Park Entrance',
+    photoUrl: '/placeholder.svg',
+    status: 'Unknown'
+  },
+  {
+    id: 'FR-003',
+    personId: 'P-003',
+    name: 'Jane Smith',
+    confidence: 92,
+    timestamp: '2025-06-15 10:15:00',
+    location: 'Metro Station Platform 2',
+    photoUrl: '/placeholder.svg',
+    status: 'Authorized'
+  }
+];
+
+export const faceRecognitionStats = [
+  { month: 'Jan', detections: 1200, matches: 45 },
+  { month: 'Feb', detections: 1400, matches: 52 },
+  { month: 'Mar', detections: 1100, matches: 38 },
+  { month: 'Apr', detections: 1600, matches: 61 },
+  { month: 'May', detections: 1800, matches: 73 },
+  { month: 'Jun', detections: 2100, matches: 89 }
+];
+

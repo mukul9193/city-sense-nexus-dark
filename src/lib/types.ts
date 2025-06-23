@@ -28,3 +28,15 @@ export type DetectionEvent = {
   severity: 'Low' | 'Medium' | 'High';
   cameraId: string;
 };
+
+export type FaceRecognitionEvent = {
+  id: string;
+  personId: string;
+  name: string;
+  confidence: number;
+  timestamp: string;
+  location: string;
+  photoUrl: string;
+  status: 'Watchlist' | 'Unknown' | 'Authorized';
+};
+
