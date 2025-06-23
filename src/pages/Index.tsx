@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cameras } from "@/lib/placeholder-data";
-import { Video, Brain, Users } from "lucide-react";
+import { cameras, recentDetections } from "@/lib/placeholder-data";
+import { Video, AlertTriangle, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import FaceRecognitionOverview from "@/components/dashboard/FaceRecognitionOverview";
 import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
@@ -9,6 +9,9 @@ import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
 const Index = () => {
   const activeCameras = cameras.filter(cam => cam.status === 'Online').length;
   const inactiveCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning').length;
+  
+  const highPriorityAlerts = recentDetections.filter(det => det.severity === 'High').length;
+  const todayDetections = recentDetections.length; // Using current data as sample
 
   return (
     <div className="space-y-8">
@@ -17,47 +20,47 @@ const Index = () => {
         {/* Camera Status */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Camera Status</CardTitle>
+            <CardTitle className="text-sm font-medium">Camera Network</CardTitle>
             <Video className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{cameras.length} Total</div>
             <div className="flex gap-2 mt-2">
               <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                {activeCameras} Active
+                {activeCameras} Online
               </Badge>
               <Badge variant="destructive">
-                {inactiveCameras} Inactive
+                {inactiveCameras} Offline
               </Badge>
             </div>
           </CardContent>
         </Card>
 
-        {/* Models in Use */}
+        {/* High Priority Alerts */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Models in Use</CardTitle>
-            <Brain className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">High Priority Alerts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3 Active</div>
+            <div className="text-2xl font-bold text-red-500">{highPriorityAlerts}</div>
             <div className="text-sm text-muted-foreground mt-1">
-              BERT v2 • YOLOv8 • ResNet50
+              Require immediate attention
             </div>
           </CardContent>
         </Card>
 
-        {/* Total Profiles */}
+        {/* Today's Activity */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Profiles</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Today's Activity</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5,890</div>
+            <div className="text-2xl font-bold">{todayDetections}</div>
             <div className="text-sm text-muted-foreground mt-1">
               <Badge variant="outline" className="text-xs">
-                +127 This Week
+                Detection Events
               </Badge>
             </div>
           </CardContent>
@@ -74,4 +77,3 @@ const Index = () => {
 };
 
 export default Index;
-

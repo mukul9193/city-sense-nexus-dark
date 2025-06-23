@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { faceRecognitionEvents, faceRecognitionStats, faceRecognitionStatusData, dailyDetectionTrends } from "@/lib/placeholder-data";
 import { Eye, AlertTriangle, BarChart3, PieChart, TrendingUp, Users, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, Pie } from 'recharts';
 import { useState } from 'react';
 
 const FaceRecognitionOverview = () => {
@@ -148,7 +148,7 @@ const FaceRecognitionOverview = () => {
               {showPieChart ? (
                 <RechartsPieChart>
                   <Tooltip formatter={(value, name) => [`${value}%`, name]} />
-                  <RechartsPieChart.Pie
+                  <Pie
                     data={faceRecognitionStatusData}
                     cx="50%"
                     cy="50%"
@@ -159,7 +159,7 @@ const FaceRecognitionOverview = () => {
                     {faceRecognitionStatusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
-                  </RechartsPieChart.Pie>
+                  </Pie>
                 </RechartsPieChart>
               ) : (
                 <BarChart data={faceRecognitionStats}>
