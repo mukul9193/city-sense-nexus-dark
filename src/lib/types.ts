@@ -15,4 +15,5 @@ export type ModuleCardData = {
   metric: string;
   icon: LucideIcon;
   color: string;
+  activeAlarms: number;
 };

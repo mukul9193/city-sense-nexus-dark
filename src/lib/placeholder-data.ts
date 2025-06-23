@@ -12,12 +12,12 @@ export const cameras: Camera[] = [
 ];
 
 export const moduleSummary: ModuleCardData[] = [
-  { name: 'Surveillance', status: 'Operational', metric: '345 Detections', icon: Shield, color: "text-accentBlue" },
-  { name: 'Vehicle Intel', status: 'Operational', metric: '1,289 Plates Read', icon: Car, color: "text-accentPurple" },
-  { name: 'Camera Mgmt', status: 'Warning', metric: '1 Camera Offline', icon: Video, color: "text-accentYellow" },
-  { name: 'Image Analysis', status: 'Operational', metric: '78 Analyses Ran', icon: Image, color: "text-accentBlue" },
-  { name: 'Profiling', status: 'Operational', metric: '5,890 Profiles', icon: UsersRound, color: "text-accentPurple" },
-  { name: 'Model Mgmt', status: 'Operational', metric: 'BERT v2 Active', icon: BrainCircuit, color: "text-accentYellow" },
+  { name: 'Surveillance', status: 'Operational', metric: '345 Detections', icon: Shield, color: "text-accentBlue", activeAlarms: 2 },
+  { name: 'Vehicle Intel', status: 'Operational', metric: '1,289 Plates Read', icon: Car, color: "text-accentPurple", activeAlarms: 0 },
+  { name: 'Camera Mgmt', status: 'Warning', metric: '1 Camera Offline', icon: Video, color: "text-accentYellow", activeAlarms: 1 },
+  { name: 'Image Analysis', status: 'Operational', metric: '78 Analyses Ran', icon: Image, color: "text-accentBlue", activeAlarms: 0 },
+  { name: 'Profiling', status: 'Operational', metric: '5,890 Profiles', icon: UsersRound, color: "text-accentPurple", activeAlarms: 1 },
+  { name: 'Model Mgmt', status: 'Operational', metric: 'BERT v2 Active', icon: BrainCircuit, color: "text-accentYellow", activeAlarms: 0 },
 ];
 
 export const systemUptimeData = [
