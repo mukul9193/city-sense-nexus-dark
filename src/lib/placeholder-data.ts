@@ -1,5 +1,5 @@
 
-import { Camera, ModuleCardData } from './types';
+import { Camera, ModuleCardData, DetectionEvent } from './types';
 import { Video, Shield, Car, CaseSensitive, UserCircle, Bot, Users, Settings, MapPin, Image, BrainCircuit, UsersRound } from 'lucide-react';
 
 export const cameras: Camera[] = [
@@ -12,26 +12,58 @@ export const cameras: Camera[] = [
 ];
 
 export const moduleSummary: ModuleCardData[] = [
-  { name: 'Surveillance', status: 'Operational', metric: '345 Detections', icon: Shield, color: "text-accentBlue", activeAlarms: 2 },
-  { name: 'Vehicle Intel', status: 'Operational', metric: '1,289 Plates Read', icon: Car, color: "text-accentPurple", activeAlarms: 0 },
-  { name: 'Camera Mgmt', status: 'Warning', metric: '1 Camera Offline', icon: Video, color: "text-accentYellow", activeAlarms: 1 },
-  { name: 'Image Analysis', status: 'Operational', metric: '78 Analyses Ran', icon: Image, color: "text-accentBlue", activeAlarms: 0 },
-  { name: 'Profiling', status: 'Operational', metric: '5,890 Profiles', icon: UsersRound, color: "text-accentPurple", activeAlarms: 1 },
-  { name: 'Model Mgmt', status: 'Operational', metric: 'BERT v2 Active', icon: BrainCircuit, color: "text-accentYellow", activeAlarms: 0 },
+  { name: 'Surveillance', status: 'Operational', metric: '345 Detections', icon: Shield, color: "text-accentBlue", activeAlarms: 2, liveAlarms: 1 },
+  { name: 'Vehicle Intel', status: 'Operational', metric: '1,289 Plates Read', icon: Car, color: "text-accentPurple", activeAlarms: 0, liveAlarms: 0 },
+  { name: 'Camera Mgmt', status: 'Warning', metric: '1 Camera Offline', icon: Video, color: "text-accentYellow", activeAlarms: 1, liveAlarms: 2 },
+  { name: 'Image Analysis', status: 'Operational', metric: '78 Analyses Ran', icon: Image, color: "text-accentBlue", activeAlarms: 0, liveAlarms: 0 },
+  { name: 'Profiling', status: 'Operational', metric: '5,890 Profiles', icon: UsersRound, color: "text-accentPurple", activeAlarms: 1, liveAlarms: 1 },
+  { name: 'Model Mgmt', status: 'Operational', metric: 'BERT v2 Active', icon: BrainCircuit, color: "text-accentYellow", activeAlarms: 0, liveAlarms: 0 },
 ];
 
-export const systemUptimeData = [
-  { name: 'Online', value: 99.8, fill: '#3A86FF' },
-  { name: 'Maintenance', value: 0.2, fill: '#FFBE0B' },
-  { name: 'Offline', value: 0, fill: '#FF006E'}
-];
-
-export const alertsData = [
-  { name: '00:00', alerts: 5 },
-  { name: '02:00', alerts: 8 },
-  { name: '04:00', alerts: 3 },
-  { name: '06:00', alerts: 12 },
-  { name: '08:00', alerts: 15 },
-  { name: '10:00', alerts: 9 },
-  { name: '12:00', alerts: 20 },
+export const recentDetections: DetectionEvent[] = [
+  { 
+    id: 'DET-001', 
+    type: 'FRS', 
+    timestamp: '2025-06-15 10:25:00', 
+    location: 'Downtown Square Cam', 
+    description: 'Unknown person detected', 
+    severity: 'Medium',
+    cameraId: 'CAM-001'
+  },
+  { 
+    id: 'DET-002', 
+    type: 'BorderJumping', 
+    timestamp: '2025-06-15 10:20:00', 
+    location: 'Central Park Entrance', 
+    description: 'Unauthorized boundary crossing', 
+    severity: 'High',
+    cameraId: 'CAM-002'
+  },
+  { 
+    id: 'DET-003', 
+    type: 'VehicleIdentify', 
+    timestamp: '2025-06-15 10:15:00', 
+    location: 'Highway 101 Overpass', 
+    description: 'License plate ABC-123 detected', 
+    severity: 'Low',
+    cameraId: 'CAM-004'
+  },
+  { 
+    id: 'DET-004', 
+    type: 'FRS', 
+    timestamp: '2025-06-15 10:10:00', 
+    location: 'Metro Station Platform 2', 
+    description: 'Suspect profile match: John Doe', 
+    severity: 'High',
+    cameraId: 'CAM-005'
+  },
+  { 
+    id: 'DET-005', 
+    type: 'BorderJumping', 
+    timestamp: '2025-06-15 10:05:00', 
+    location: 'Port Authority Gate 3', 
+    description: 'Perimeter breach detected', 
+    severity: 'Medium',
+    cameraId: 'CAM-006'
+  }
 ];

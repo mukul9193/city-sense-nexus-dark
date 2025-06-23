@@ -16,4 +16,15 @@ export type ModuleCardData = {
   icon: LucideIcon;
   color: string;
   activeAlarms: number;
+  liveAlarms: number;
+};
+
+export type DetectionEvent = {
+  id: string;
+  type: 'FRS' | 'BorderJumping' | 'VehicleIdentify';
+  timestamp: string;
+  location: string;
+  description: string;
+  severity: 'Low' | 'Medium' | 'High';
+  cameraId: string;
 };
