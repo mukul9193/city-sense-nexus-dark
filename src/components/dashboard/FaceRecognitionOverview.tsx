@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { faceRecognitionEvents, faceRecognitionStats, faceRecognitionStatusData, dailyDetectionTrends } from "@/lib/placeholder-data";
-import { Eye, AlertTriangle, BarChart3, PieChart, TrendingUp, Users, Clock } from "lucide-react";
+import { Eye, AlertTriangle, BarChart3, PieChart, TrendingUp, Users, Clock, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, Pie } from 'recharts';
 import { useState } from 'react';
@@ -29,7 +28,8 @@ const FaceRecognitionOverview = () => {
   const matchRate = ((totalMatches / totalDetections) * 100).toFixed(1);
 
   const todayDetections = dailyDetectionTrends.reduce((sum, item) => sum + item.detections, 0);
-  const watchlistAlerts = faceRecognitionEvents.filter(event => event.status === 'Watchlist').length;
+  const averageConfidence = 91.2; // Mock average confidence
+  const processingSpeed = 145; // Mock processing speed in ms
 
   return (
     <div className="space-y-6">
@@ -74,10 +74,10 @@ const FaceRecognitionOverview = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <Activity className="h-4 w-4 text-purple-500" />
               <div>
-                <div className="text-2xl font-bold">{watchlistAlerts}</div>
-                <div className="text-xs text-muted-foreground">Watchlist Alerts</div>
+                <div className="text-2xl font-bold">{averageConfidence}%</div>
+                <div className="text-xs text-muted-foreground">Avg Confidence</div>
               </div>
             </div>
           </CardContent>
@@ -85,10 +85,10 @@ const FaceRecognitionOverview = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-purple-500" />
+              <Clock className="h-4 w-4 text-orange-500" />
               <div>
-                <div className="text-2xl font-bold">98.5%</div>
-                <div className="text-xs text-muted-foreground">System Uptime</div>
+                <div className="text-2xl font-bold">{processingSpeed}ms</div>
+                <div className="text-xs text-muted-foreground">Processing Speed</div>
               </div>
             </div>
           </CardContent>
