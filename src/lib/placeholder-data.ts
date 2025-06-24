@@ -1,4 +1,3 @@
-
 import { Camera, ModuleCardData, DetectionEvent, FaceRecognitionEvent } from './types';
 import { Video, Shield, Car, CaseSensitive, UserCircle, Bot, Users, Settings, MapPin, Image, BrainCircuit, UsersRound } from 'lucide-react';
 
@@ -144,4 +143,20 @@ export const dailyDetectionTrends = [
   { time: '16:00', detections: 89 },
   { time: '20:00', detections: 56 },
   { time: '23:59', detections: 23 }
+];
+
+export const alertsData = [
+  { time: '00:00', alerts: 2 },
+  { time: '04:00', alerts: 1 },
+  { time: '08:00', alerts: 5 },
+  { time: '12:00', alerts: 3 },
+  { time: '16:00', alerts: 7 },
+  { time: '20:00', alerts: 4 },
+  { time: '23:59', alerts: 2 }
+];
+
+export const systemUptimeData = [
+  { name: 'Online', value: 92, fill: '#22c55e' },
+  { name: 'Maintenance', value: 5, fill: '#eab308' },
+  { name: 'Offline', value: 3, fill: '#ef4444' }
 ];

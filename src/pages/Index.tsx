@@ -1,15 +1,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cameras, recentDetections } from "@/lib/placeholder-data";
-import { Video, AlertTriangle, Activity } from "lucide-react";
+import { recentDetections } from "@/lib/placeholder-data";
+import { AlertTriangle, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import FaceRecognitionOverview from "@/components/dashboard/FaceRecognitionOverview";
 import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
+import CameraNetworkCard from "@/components/dashboard/CameraNetworkCard";
 
 const Index = () => {
-  const activeCameras = cameras.filter(cam => cam.status === 'Online').length;
-  const inactiveCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning').length;
-  
   const highPriorityAlerts = recentDetections.filter(det => det.severity === 'High').length;
   const todayDetections = recentDetections.length; // Using current data as sample
 
@@ -17,24 +15,8 @@ const Index = () => {
     <div className="space-y-8">
       {/* Top Metrics */}
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Camera Status */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Camera Network</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cameras.length} Total</div>
-            <div className="flex gap-2 mt-2">
-              <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                {activeCameras} Online
-              </Badge>
-              <Badge variant="destructive">
-                {inactiveCameras} Offline
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Enhanced Camera Network */}
+        <CameraNetworkCard />
 
         {/* High Priority Alerts */}
         <Card>
