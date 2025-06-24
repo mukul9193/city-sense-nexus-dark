@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cameras } from "@/lib/placeholder-data";
 import { Video, Camera, CameraOff, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
@@ -45,88 +44,81 @@ const CameraNetworkCard = () => {
         <CardContent className="space-y-3">
           <div className="text-2xl font-bold">{cameras.length} Total</div>
           
-          {/* Active Cameras Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+          {/* Horizontally aligned camera status tabs */}
+          <div className="flex gap-4">
+            {/* Active Cameras Section */}
+            <div 
+              className="flex-1 cursor-pointer"
+              onClick={() => setShowActiveCameras(!showActiveCameras)}
+            >
+              <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors">
                 <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                   <Camera className="h-3 w-3 mr-1" />
                   {activeCameras.length} Online
                 </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowActiveCameras(!showActiveCameras)}
-                  className="h-6 px-2 text-xs"
-                >
-                  View {showActiveCameras ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                </Button>
+                {showActiveCameras ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </div>
             </div>
-            
-            {showActiveCameras && (
-              <div className="space-y-1 pl-2 border-l-2 border-green-500">
-                {activeCameras.map((camera) => (
-                  <div 
-                    key={camera.id} 
-                    className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
-                    onClick={() => handleCameraClick(camera)}
-                  >
-                    <div className="flex items-center gap-2 text-xs">
-                      <Camera className="h-3 w-3 text-green-500" />
-                      <span className="font-medium">{camera.name}</span>
-                    </div>
-                    <Badge variant="default" className="bg-green-500 text-xs px-1 py-0">
-                      Online
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* Inactive Cameras Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            {/* Inactive Cameras Section */}
+            <div 
+              className="flex-1 cursor-pointer"
+              onClick={() => setShowInactiveCameras(!showInactiveCameras)}
+            >
+              <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors">
                 <Badge variant="destructive">
                   <CameraOff className="h-3 w-3 mr-1" />
                   {inactiveCameras.length} Offline
                 </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowInactiveCameras(!showInactiveCameras)}
-                  className="h-6 px-2 text-xs"
-                >
-                  View {showInactiveCameras ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                </Button>
+                {showInactiveCameras ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </div>
             </div>
-            
-            {showInactiveCameras && (
-              <div className="space-y-1 pl-2 border-l-2 border-red-500">
-                {inactiveCameras.map((camera) => (
-                  <div 
-                    key={camera.id} 
-                    className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
-                    onClick={() => handleCameraClick(camera)}
-                  >
-                    <div className="flex items-center gap-2 text-xs">
-                      <CameraOff className={cn(
-                        "h-3 w-3",
-                        camera.status === 'Offline' ? "text-red-500" : "text-yellow-500"
-                      )} />
-                      <span className="font-medium">{camera.name}</span>
-                    </div>
-                    <Badge variant={camera.status === 'Offline' ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
-                      {camera.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
+          
+          {/* Active Cameras List */}
+          {showActiveCameras && (
+            <div className="space-y-1 pl-2 border-l-2 border-green-500">
+              {activeCameras.map((camera) => (
+                <div 
+                  key={camera.id} 
+                  className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
+                  onClick={() => handleCameraClick(camera)}
+                >
+                  <div className="flex items-center gap-2 text-xs">
+                    <Camera className="h-3 w-3 text-green-500" />
+                    <span className="font-medium">{camera.name}</span>
+                  </div>
+                  <Badge variant="default" className="bg-green-500 text-xs px-1 py-0">
+                    Online
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Inactive Cameras List */}
+          {showInactiveCameras && (
+            <div className="space-y-1 pl-2 border-l-2 border-red-500">
+              {inactiveCameras.map((camera) => (
+                <div 
+                  key={camera.id} 
+                  className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
+                  onClick={() => handleCameraClick(camera)}
+                >
+                  <div className="flex items-center gap-2 text-xs">
+                    <CameraOff className={cn(
+                      "h-3 w-3",
+                      camera.status === 'Offline' ? "text-red-500" : "text-yellow-500"
+                    )} />
+                    <span className="font-medium">{camera.name}</span>
+                  </div>
+                  <Badge variant={camera.status === 'Offline' ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
+                    {camera.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
