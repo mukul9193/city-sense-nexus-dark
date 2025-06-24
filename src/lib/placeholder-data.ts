@@ -1,4 +1,4 @@
-import { Camera, ModuleCardData, DetectionEvent, FaceRecognitionEvent } from './types';
+import { Camera, ModuleCardData, DetectionEvent, FaceRecognitionEvent, ObjectDetectionEvent, BorderJumpingEvent, ANPREvent } from './types';
 import { Video, Shield, Car, CaseSensitive, UserCircle, Bot, Users, Settings, MapPin, Image, BrainCircuit, UsersRound } from 'lucide-react';
 
 export const cameras: Camera[] = [
@@ -159,4 +159,130 @@ export const systemUptimeData = [
   { name: 'Online', value: 92, fill: '#22c55e' },
   { name: 'Maintenance', value: 5, fill: '#eab308' },
   { name: 'Offline', value: 3, fill: '#ef4444' }
+];
+
+export const objectDetectionEvents: ObjectDetectionEvent[] = [
+  {
+    id: 'OD-001',
+    objectType: 'Abandoned Bag',
+    confidence: 87,
+    timestamp: '2025-06-15 10:25:00',
+    location: 'Central Station Platform 1',
+    description: 'Unattended baggage detected',
+    status: 'Alert'
+  },
+  {
+    id: 'OD-002',
+    objectType: 'Weapon',
+    confidence: 92,
+    timestamp: '2025-06-15 10:20:00',
+    location: 'Security Checkpoint A',
+    description: 'Potential weapon detected',
+    status: 'Alert'
+  },
+  {
+    id: 'OD-003',
+    objectType: 'Person',
+    confidence: 95,
+    timestamp: '2025-06-15 10:15:00',
+    location: 'Main Entrance',
+    description: 'Person loitering detected',
+    status: 'Suspicious'
+  },
+  {
+    id: 'OD-004',
+    objectType: 'Vehicle',
+    confidence: 89,
+    timestamp: '2025-06-15 10:10:00',
+    location: 'Parking Area B',
+    description: 'Unauthorized vehicle',
+    status: 'Suspicious'
+  }
+];
+
+export const borderJumpingEvents: BorderJumpingEvent[] = [
+  {
+    id: 'BJ-001',
+    severity: 'High',
+    timestamp: '2025-06-15 10:25:00',
+    location: 'Perimeter Zone A',
+    description: 'Multiple persons crossing restricted boundary',
+    zone: 'Zone A-1',
+    confidence: 94
+  },
+  {
+    id: 'BJ-002',
+    severity: 'Medium',
+    timestamp: '2025-06-15 10:20:00',
+    location: 'Perimeter Zone B',
+    description: 'Single person boundary breach',
+    zone: 'Zone B-3',
+    confidence: 88
+  },
+  {
+    id: 'BJ-003',
+    severity: 'Low',
+    timestamp: '2025-06-15 10:15:00',
+    location: 'Perimeter Zone C',
+    description: 'Possible false alarm - animal detected',
+    zone: 'Zone C-2',
+    confidence: 72
+  }
+];
+
+export const anprEvents: ANPREvent[] = [
+  {
+    id: 'ANPR-001',
+    plateNumber: 'ABC-1234',
+    vehicleType: 'Sedan',
+    confidence: 96,
+    timestamp: '2025-06-15 10:25:00',
+    location: 'Main Gate',
+    status: 'Watchlist'
+  },
+  {
+    id: 'ANPR-002',
+    plateNumber: 'XYZ-5678',
+    vehicleType: 'SUV',
+    confidence: 91,
+    timestamp: '2025-06-15 10:20:00',
+    location: 'Highway 101 Checkpoint',
+    status: 'Normal'
+  },
+  {
+    id: 'ANPR-003',
+    plateNumber: 'DEF-9101',
+    vehicleType: 'Truck',
+    confidence: 84,
+    timestamp: '2025-06-15 10:15:00',
+    location: 'Service Entrance',
+    status: 'Unknown'
+  }
+];
+
+export const objectDetectionStats = [
+  { month: 'Jan', detections: 890, alerts: 23 },
+  { month: 'Feb', detections: 1020, alerts: 31 },
+  { month: 'Mar', detections: 780, alerts: 18 },
+  { month: 'Apr', detections: 1150, alerts: 42 },
+  { month: 'May', detections: 1320, alerts: 38 },
+  { month: 'Jun', detections: 1480, alerts: 51 }
+];
+
+export const borderJumpingStats = [
+  { month: 'Jan', incidents: 12, breaches: 8 },
+  { month: 'Feb', incidents: 15, breaches: 11 },
+  { month: 'Mar', incidents: 9, breaches: 6 },
+  { month: 'Apr', incidents: 18, breaches: 14 },
+  { month: 'May', incidents: 21, breaches: 16 },
+  { month: 'Jun', incidents: 17, breaches: 13 }
+];
+
+export const anprStats = [
+  { month: 'Jan', scans: 2100, matches: 145 },
+  { month: 'Feb', scans: 2350, matches: 162 },
+  { month: 'Mar', scans: 1980, matches: 128 },
+  { month: 'Apr', scans: 2580, matches: 191 },
+  { month: 'May', scans: 2720, matches: 203 },
+  { month: 'Jun', scans: 2940, matches: 221 }
 ];

@@ -40,3 +40,32 @@ export type FaceRecognitionEvent = {
   status: 'Watchlist' | 'Unknown' | 'Authorized';
 };
 
+export type ObjectDetectionEvent = {
+  id: string;
+  objectType: string;
+  confidence: number;
+  timestamp: string;
+  location: string;
+  description: string;
+  status: 'Normal' | 'Suspicious' | 'Alert';
+};
+
+export type BorderJumpingEvent = {
+  id: string;
+  severity: 'Low' | 'Medium' | 'High';
+  timestamp: string;
+  location: string;
+  description: string;
+  zone: string;
+  confidence: number;
+};
+
+export type ANPREvent = {
+  id: string;
+  plateNumber: string;
+  vehicleType: string;
+  confidence: number;
+  timestamp: string;
+  location: string;
+  status: 'Normal' | 'Watchlist' | 'Unknown';
+};

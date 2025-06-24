@@ -4,6 +4,9 @@ import { recentDetections } from "@/lib/placeholder-data";
 import { Shield, Activity, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import FaceRecognitionOverview from "@/components/dashboard/FaceRecognitionOverview";
+import ObjectDetectionOverview from "@/components/dashboard/ObjectDetectionOverview";
+import BorderJumpingOverview from "@/components/dashboard/BorderJumpingOverview";
+import ANPROverview from "@/components/dashboard/ANPROverview";
 import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
 import CameraNetworkCard from "@/components/dashboard/CameraNetworkCard";
 
@@ -54,6 +57,15 @@ const Index = () => {
 
       {/* Face Recognition Overview */}
       <FaceRecognitionOverview />
+
+      {/* Object Detection Overview */}
+      <ObjectDetectionOverview />
+
+      {/* Border Jumping Overview */}
+      <BorderJumpingOverview />
+
+      {/* ANPR Overview */}
+      <ANPROverview />
 
       {/* Surveillance Modules */}
       <SurveillanceModules />
