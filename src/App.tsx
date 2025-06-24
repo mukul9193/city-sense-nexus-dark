@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MainLayout from "./components/layout/MainLayout";
 import CameraStatus from "./pages/camera-management/CameraStatus";
+import MapView from "./pages/camera-management/MapView";
+import AddCamera from "./pages/camera-management/AddCamera";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<MainLayout><Index /></MainLayout>} />
           <Route path="/camera-management/status" element={<MainLayout><CameraStatus /></MainLayout>} />
+          <Route path="/camera-management/map" element={<MainLayout><MapView /></MainLayout>} />
+          <Route path="/camera-management/add" element={<MainLayout><AddCamera /></MainLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
