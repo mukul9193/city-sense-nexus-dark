@@ -3,20 +3,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { recentDetections } from "@/lib/placeholder-data";
 import { Shield, Activity, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import FaceRecognitionOverview from "@/components/dashboard/FaceRecognitionOverview";
 import ObjectDetectionOverview from "@/components/dashboard/ObjectDetectionOverview";
 import BorderJumpingOverview from "@/components/dashboard/BorderJumpingOverview";
 import ANPROverview from "@/components/dashboard/ANPROverview";
 import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
 import CameraNetworkCard from "@/components/dashboard/CameraNetworkCard";
+import DashboardToggle from "@/components/dashboard/DashboardToggle";
+import OverviewEvents from "@/components/dashboard/OverviewEvents";
 
 const Index = () => {
+  const [isDetailedView, setIsDetailedView] = useState(true);
+  
   const activeThreats = recentDetections.filter(det => det.severity === 'High').length;
   const totalDetections = recentDetections.length;
   const systemEfficiency = 94.2; // Mock efficiency percentage
 
   return (
     <div className="space-y-8">
+      {/* Header with Toggle */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Security Dashboard</h1>
+        <DashboardToggle isDetailedView={isDetailedView} onToggle={setIsDetailedView} />
+      </div>
+
       {/* Top Metrics */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Enhanced Camera Network */}
@@ -55,20 +66,33 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Face Recognition Overview */}
-      <FaceRecognitionOverview />
+      {/* Conditional Content Based on View Mode */}
+      {isDetailedView ? (
+        <>
+          {/* Face Recognition Overview */}
+          <FaceRecognitionOverview />
 
-      {/* Object Detection Overview */}
-      <ObjectDetectionOverview />
+          {/* Object Detection Overview */}
+          <ObjectDetectionOverview />
 
-      {/* Border Jumping Overview */}
-      <BorderJumpingOverview />
+          {/* Border Jumping Overview */}
+          <BorderJumpingOverview />
 
-      {/* ANPR Overview */}
-      <ANPROverview />
+          {/* ANPR Overview */}
+          <ANPROverview />
 
-      {/* Surveillance Modules */}
-      <SurveillanceModules />
+          {/* Surveillance Modules */}
+          <SurveillanceModules />
+        </>
+      ) : (
+        <>
+          {/* Overview Events Grid */}
+          <OverviewEvents />
+
+          {/* Surveillance Modules */}
+          <SurveillanceModules />
+        </>
+      )}
     </div>
   );
 };
