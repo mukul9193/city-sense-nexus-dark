@@ -5,9 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { Camera, TestTube, Settings, MapPin, Network, Eye, ArrowLeft, ArrowRight, RotateCw } from "lucide-react";
+import { Camera, TestTube, Settings, MapPin, Network, Eye, ArrowLeft, ArrowRight, RotateCw, Users } from "lucide-react";
 import CameraTestPreview from "@/components/camera-management/CameraTestPreview";
 import BorderJumpingSetup from "@/components/camera-management/BorderJumpingSetup";
+import InOutCountingSetup from "@/components/camera-management/InOutCountingSetup";
 import ONVIFDiscovery from "@/components/camera-management/ONVIFDiscovery";
 import PTZConfiguration from "@/components/camera-management/PTZConfiguration";
 
@@ -29,6 +30,7 @@ const AddCamera = () => {
   const [selectedAnalytics, setSelectedAnalytics] = useState<string[]>([]);
   const [showTestPreview, setShowTestPreview] = useState(false);
   const [showBorderSetup, setShowBorderSetup] = useState(false);
+  const [showInOutSetup, setShowInOutSetup] = useState(false);
   const [showONVIF, setShowONVIF] = useState(false);
   const [testFrameUrl, setTestFrameUrl] = useState('');
   const [testCompleted, setTestCompleted] = useState(false);
@@ -38,6 +40,7 @@ const AddCamera = () => {
     { id: 'object-detection', name: 'Object Detection', description: 'Detect vehicles, people, and objects' },
     { id: 'anpr', name: 'ANPR (License Plate Recognition)', description: 'Automatic number plate recognition' },
     { id: 'border-jumping', name: 'Border Jumping Detection', description: 'Detect boundary crossings' },
+    { id: 'in-out-counting', name: 'In/Out Counting', description: 'Count objects crossing virtual lines' },
     { id: 'crowd-analysis', name: 'Crowd Analysis', description: 'Monitor crowd density and behavior' },
     { id: 'loitering', name: 'Loitering Detection', description: 'Detect people staying in areas too long' }
   ];
@@ -300,6 +303,17 @@ const AddCamera = () => {
                   </Button>
                 )}
 
+                {selectedAnalytics.includes('in-out-counting') && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowInOutSetup(true)}
+                    className="w-full"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Configure Counting Lines on Frame
+                  </Button>
+                )}
+
                 <div className="flex justify-between pt-4">
                   <Button variant="outline" onClick={() => setCurrentStep('camera')}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -368,6 +382,12 @@ const AddCamera = () => {
       <BorderJumpingSetup
         open={showBorderSetup}
         onOpenChange={setShowBorderSetup}
+        frameUrl={testFrameUrl}
+      />
+
+      <InOutCountingSetup
+        open={showInOutSetup}
+        onOpenChange={setShowInOutSetup}
         frameUrl={testFrameUrl}
       />
 
