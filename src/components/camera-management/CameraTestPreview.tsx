@@ -2,20 +2,34 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Eye, Wifi } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Wifi, ArrowRight } from "lucide-react";
 
 interface CameraTestPreviewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   frameUrl: string;
   cameraName: string;
+  onConfirmAndContinue?: () => void;
 }
 
-const CameraTestPreview = ({ open, onOpenChange, frameUrl, cameraName }: CameraTestPreviewProps) => {
+const CameraTestPreview = ({ 
+  open, 
+  onOpenChange, 
+  frameUrl, 
+  cameraName, 
+  onConfirmAndContinue 
+}: CameraTestPreviewProps) => {
   const connectionStatus = frameUrl ? 'connected' : 'disconnected';
   const resolution = '1920x1080';
   const fps = '30';
   const latency = '145ms';
+
+  const handleConfirmAndContinue = () => {
+    if (onConfirmAndContinue) {
+      onConfirmAndContinue();
+    }
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,14 +64,28 @@ const CameraTestPreview = ({ open, onOpenChange, frameUrl, cameraName }: CameraT
             </div>
           </div>
 
-          {/* Video Preview */}
+          {/* Latest Frame Preview */}
           <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
             {frameUrl ? (
-              <img 
-                src={frameUrl} 
-                alt="Camera Preview" 
-                className="w-full h-full object-cover"
-              />
+              <>
+                <img 
+                  src={frameUrl} 
+                  alt="Latest Camera Frame" 
+                  className="w-full h-full object-cover"
+                />
+                {/* Live indicator */}
+                <div className="absolute top-4 left-4">
+                  <Badge variant="destructive" className="bg-red-500 animate-pulse">
+                    ● LATEST FRAME
+                  </Badge>
+                </div>
+                {/* Frame timestamp */}
+                <div className="absolute bottom-4 right-4">
+                  <Badge variant="secondary" className="bg-black/50 text-white">
+                    {new Date().toLocaleTimeString()}
+                  </Badge>
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-full text-white">
                 <div className="text-center">
@@ -67,25 +95,22 @@ const CameraTestPreview = ({ open, onOpenChange, frameUrl, cameraName }: CameraT
                 </div>
               </div>
             )}
-            
-            {/* Live indicator */}
-            {frameUrl && (
-              <div className="absolute top-4 left-4">
-                <Badge variant="destructive" className="bg-red-500 animate-pulse">
-                  ● LIVE
-                </Badge>
-              </div>
-            )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-between">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button disabled={!frameUrl}>
-              Confirm & Continue
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" disabled={!frameUrl}>
+                Test Again
+              </Button>
+              <Button disabled={!frameUrl} onClick={handleConfirmAndContinue}>
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Continue to Analytics
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
