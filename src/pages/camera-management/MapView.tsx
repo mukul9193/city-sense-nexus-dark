@@ -2,9 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cameras } from "@/lib/placeholder-data";
-import { MapPin, Camera, Plus, Filter } from "lucide-react";
+import { cameras, recentDetections } from "@/lib/placeholder-data";
+import { MapPin, Camera, Plus, Filter, Eye, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const MapView = () => {
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
@@ -40,6 +41,23 @@ const MapView = () => {
     }
   };
 
+  // Mock data for selected camera events and analytics
+  const getCameraEvents = (cameraId: string) => {
+    return recentDetections.filter(detection => detection.camera === cameraId).slice(0, 5);
+  };
+
+  const getCameraAnalytics = (cameraId: string) => {
+    // Mock hourly detection data
+    return [
+      { time: '00:00', detections: 5 },
+      { time: '04:00', detections: 2 },
+      { time: '08:00', detections: 15 },
+      { time: '12:00', detections: 12 },
+      { time: '16:00', detections: 18 },
+      { time: '20:00', detections: 8 },
+    ];
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -56,9 +74,9 @@ const MapView = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Map Area */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -142,25 +160,27 @@ const MapView = () => {
           </Card>
         </div>
 
-        {/* Camera Info Panel */}
+        {/* Enhanced Camera Info Panel */}
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Camera Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedCamera ? (
-                (() => {
-                  const camera = cameras.find(c => c.id === selectedCamera);
-                  if (!camera) return null;
-                  
-                  return (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-medium">{camera.name}</h3>
-                        <p className="text-sm text-muted-foreground">{camera.id}</p>
-                      </div>
-                      
+          {selectedCamera ? (
+            (() => {
+              const camera = cameras.find(c => c.id === selectedCamera);
+              if (!camera) return null;
+              
+              const cameraEvents = getCameraEvents(selectedCamera);
+              const analyticsData = getCameraAnalytics(selectedCamera);
+
+              return (
+                <>
+                  {/* Camera Details */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        {camera.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Status:</span>
@@ -177,25 +197,112 @@ const MapView = () => {
                           <span className="text-sm text-muted-foreground">{camera.lastSeen}</span>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
 
+                  {/* Live View */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Live View
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-3">
+                        <img 
+                          src="/placeholder.svg" 
+                          alt="Live Camera Feed" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2 left-2">
+                          <Badge variant="destructive" className="bg-red-500 animate-pulse">
+                            ● LIVE
+                          </Badge>
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Button variant="outline" size="sm" className="w-full">
-                          View Live Feed
-                        </Button>
-                        <Button variant="outline" size="sm" className="w-full">
-                          Camera Settings
+                          <Eye className="h-3 w-3 mr-2" />
+                          Full Screen View
                         </Button>
                       </div>
-                    </div>
-                  );
-                })()
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Click on a camera icon to view details
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                    </CardContent>
+                  </Card>
+
+                  {/* Recent Events */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        Recent Events
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {cameraEvents.length > 0 ? (
+                          cameraEvents.map((event, index) => (
+                            <div key={index} className="flex items-start gap-3 p-2 bg-muted/50 rounded-lg">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                                event.severity === 'High' ? 'bg-red-500' : 
+                                event.severity === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{event.type}</p>
+                                <p className="text-xs text-muted-foreground">{event.time}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No recent events</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Analytics Chart */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Detection Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={analyticsData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="detections" stroke="#8884d8" strokeWidth={2} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-3 text-center">
+                        <p className="text-xs text-muted-foreground">Detections in last 24 hours</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              );
+            })()
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Camera Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground">
+                    Click on a camera icon to view detailed information, live feed, and analytics
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats */}
           <Card>
