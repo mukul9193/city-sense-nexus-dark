@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cameras } from "@/lib/placeholder-data";
-import { Camera, CameraOff, Edit, Eye, Wifi, WifiOff, Clock, AlertTriangle } from "lucide-react";
+import { Camera, CameraOff, Edit, Eye, Wifi, WifiOff, Clock, AlertTriangle, MapPin, Settings, Monitor, RotateCcw, FileText, Maximize, Calendar, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Camera as CameraType } from "@/lib/types";
+import { useState } from "react";
 
 interface CameraNetworkModalProps {
   open: boolean;
@@ -15,201 +16,298 @@ interface CameraNetworkModalProps {
   onViewFrame?: (camera: CameraType) => void;
 }
 
-const CameraNetworkModal = ({ open, onOpenChange, onEditCamera, onViewFrame }: CameraNetworkModalProps) => {
-  const onlineCameras = cameras.filter(cam => cam.status === 'Online');
-  const offlineCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning');
+interface CameraDetailsModalProps {
+  camera: CameraType | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-  const getOfflineReason = (camera: CameraType) => {
-    // Mock offline reasons - in real app this would come from backend
+const CameraDetailsModal = ({ camera, open, onOpenChange }: CameraDetailsModalProps) => {
+  if (!camera) return null;
+
+  const isOnline = camera.status === 'Online';
+  
+  const getOfflineReason = () => {
     const reasons = [
-      "Network connection lost",
-      "Power supply disconnected", 
+      "RTSP connection timeout",
+      "Authentication failed", 
+      "Network unreachable",
       "Camera hardware failure",
-      "Authentication failed",
-      "Firmware update required"
+      "Power supply disconnected"
     ];
     return reasons[Math.floor(Math.random() * reasons.length)];
   };
 
-  const getLastSeen = (camera: CameraType) => {
-    // Mock last seen times
-    const times = ["2 minutes ago", "15 minutes ago", "1 hour ago", "3 hours ago", "1 day ago"];
-    return times[Math.floor(Math.random() * times.length)];
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
-            Camera Network Status
+            {isOnline ? (
+              <>
+                <Camera className="h-5 w-5 text-green-500" />
+                Camera Active - {camera.name}
+              </>
+            ) : (
+              <>
+                <CameraOff className="h-5 w-5 text-red-500" />
+                Camera Offline - {camera.name}
+              </>
+            )}
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Total Cameras</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{cameras.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-green-600">Online</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{onlineCameras.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-red-600">Offline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">{offlineCameras.length}</div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Live Stream / Latest Frame */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                {isOnline ? "Live Stream View" : "Latest Available Frame"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <Monitor className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">
+                    {isOnline ? "Live stream would appear here" : "Last captured frame would appear here"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Online Cameras Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Wifi className="h-5 w-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-green-600">Online Cameras ({onlineCameras.length})</h3>
-            </div>
-            
-            <div className="grid gap-3 md:grid-cols-2">
-              {onlineCameras.map((camera) => (
-                <Card key={camera.id} className="border-green-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Camera className="h-4 w-4 text-green-500" />
-                          <span className="font-medium">{camera.name}</span>
-                          <Badge variant="default" className="bg-green-500 text-xs">
-                            Online
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{camera.location}</p>
-                        <div className="text-xs text-muted-foreground">
-                          Resolution: {camera.resolution} | FPS: {camera.fps}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-green-600">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          Live streaming
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onViewFrame?.(camera)}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onEditCamera?.(camera)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          {/* Camera Details */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Camera Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Camera ID:</span>
+                  <p className="font-medium">{camera.id}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">IP Address:</span>
+                  <p className="font-medium">{camera.ip}:{camera.port}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Location:</span>
+                  <p className="font-medium">{camera.location}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Resolution:</span>
+                  <p className="font-medium">{camera.resolution} @ {camera.fps}fps</p>
+                </div>
+                {!isOnline && (
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Last Active:</span>
+                    <p className="font-medium">{camera.lastSeen}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Offline Cameras Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <WifiOff className="h-5 w-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-red-600">Offline Cameras ({offlineCameras.length})</h3>
-            </div>
+          {/* Diagnostics for Offline Cameras */}
+          {!isOnline && (
+            <Card className="border-red-200 bg-red-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-red-700 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Diagnostics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <span className="text-sm text-red-600 font-medium">Detected Issue:</span>
+                  <p className="text-sm text-red-700">{getOfflineReason()}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-red-600 font-medium">Admin Notes:</span>
+                  <p className="text-sm text-gray-600 italic">No notes added</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Actions */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <Button variant="outline" size="sm" className="justify-start">
+              <Edit className="h-4 w-4 mr-2" />
+              {isOnline ? "Edit Settings" : "Edit Info"}
+            </Button>
             
-            <div className="grid gap-3 md:grid-cols-2">
-              {offlineCameras.map((camera) => (
-                <Card key={camera.id} className="border-red-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <CameraOff className={cn(
-                            "h-4 w-4",
-                            camera.status === 'Offline' ? "text-red-500" : "text-yellow-500"
-                          )} />
-                          <span className="font-medium">{camera.name}</span>
-                          <Badge 
-                            variant={camera.status === 'Offline' ? 'destructive' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {camera.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{camera.location}</p>
-                        
-                        {/* Offline Details */}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-xs text-red-600">
-                            <AlertTriangle className="h-3 w-3" />
-                            <span className="font-medium">Issue:</span>
-                            <span>{getOfflineReason(camera)}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>Last seen: {getLastSeen(camera)}</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            IP: {camera.ip} | Port: {camera.port}
-                          </div>
-                        </div>
-                        
-                        {/* Troubleshooting Steps */}
-                        <div className="text-xs bg-red-50 p-2 rounded">
-                          <div className="font-medium text-red-700 mb-1">Troubleshooting:</div>
-                          <ul className="text-red-600 space-y-0.5">
-                            <li>• Check network connection</li>
-                            <li>• Verify power supply</li>
-                            <li>• Test camera ping response</li>
-                          </ul>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onViewFrame?.(camera)}
-                          disabled={camera.status === 'Offline'}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onEditCamera?.(camera)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isOnline ? (
+              <>
+                <Button variant="outline" size="sm" className="justify-start">
+                  <Target className="h-4 w-4 mr-2" />
+                  Configure Analytics
+                </Button>
+                
+                {camera.isPtz && (
+                  <Button variant="outline" size="sm" className="justify-start">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    PTZ Positions
+                  </Button>
+                )}
+                
+                <Button variant="outline" size="sm" className="justify-start">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule
+                </Button>
+                
+                <Button variant="outline" size="sm" className="justify-start">
+                  <Maximize className="h-4 w-4 mr-2" />
+                  Fullscreen
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="justify-start">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Retry Connection
+                </Button>
+                
+                <Button variant="outline" size="sm" className="justify-start">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Error Log
+                </Button>
+                
+                <Button variant="outline" size="sm" className="justify-start">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Last Frame
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const CameraNetworkModal = ({ open, onOpenChange, onEditCamera, onViewFrame }: CameraNetworkModalProps) => {
+  const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  
+  const onlineCameras = cameras.filter(cam => cam.status === 'Online');
+  const offlineCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning');
+
+  const handleCameraClick = (camera: CameraType) => {
+    setSelectedCamera(camera);
+    setDetailsModalOpen(true);
+  };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Camera Network Status
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Total Cameras</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{cameras.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-green-600">Online</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{onlineCameras.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-red-600">Offline</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">{offlineCameras.length}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Online Cameras Grid */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Wifi className="h-5 w-5 text-green-500" />
+                <h3 className="text-lg font-semibold text-green-600">Online Cameras ({onlineCameras.length})</h3>
+              </div>
+              
+              <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
+                {onlineCameras.map((camera) => (
+                  <Card 
+                    key={camera.id} 
+                    className="border-green-200 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
+                    onClick={() => handleCameraClick(camera)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                        <Camera className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="text-sm font-medium truncate">{camera.name}</div>
+                      <div className="text-xs text-green-600 mt-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full inline-block animate-pulse mr-1"></div>
+                        Active
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Offline Cameras Grid */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <WifiOff className="h-5 w-5 text-red-500" />
+                <h3 className="text-lg font-semibold text-red-600">Offline Cameras ({offlineCameras.length})</h3>
+              </div>
+              
+              <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
+                {offlineCameras.map((camera) => (
+                  <Card 
+                    key={camera.id} 
+                    className="border-red-200 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
+                    onClick={() => handleCameraClick(camera)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                        <CameraOff className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="text-sm font-medium truncate">{camera.name}</div>
+                      <div className="text-xs text-red-600 mt-1">
+                        <Clock className="h-3 w-3 inline-block mr-1" />
+                        Offline
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Camera Details Modal */}
+      <CameraDetailsModal
+        camera={selectedCamera}
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+      />
+    </>
   );
 };
 

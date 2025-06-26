@@ -1,4 +1,3 @@
-
 import { LucideIcon } from "lucide-react";
 
 export type Camera = {
@@ -7,6 +6,17 @@ export type Camera = {
   location: string;
   status: 'Online' | 'Offline' | 'Warning';
   lastSeen: string;
+  ip: string;
+  port: number;
+  resolution: string;
+  fps: number;
+  lat?: number;
+  lng?: number;
+  username?: string;
+  password?: string;
+  rtspUrl?: string;
+  onvifPort?: number;
+  isPtz?: boolean;
 };
 
 export type ModuleCardData = {

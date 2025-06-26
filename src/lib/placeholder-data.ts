@@ -2,12 +2,90 @@ import { Camera, ModuleCardData, DetectionEvent, FaceRecognitionEvent, ObjectDet
 import { Video, Shield, Car, CaseSensitive, UserCircle, Bot, Users, Settings, MapPin, Image, BrainCircuit, UsersRound } from 'lucide-react';
 
 export const cameras: Camera[] = [
-  { id: 'CAM-001', name: 'Downtown Square Cam', location: '123 Main St', status: 'Online', lastSeen: '2025-06-15 10:30:00' },
-  { id: 'CAM-002', name: 'Central Park Entrance', location: '456 Oak Ave', status: 'Online', lastSeen: '2025-06-15 10:30:00' },
-  { id: 'CAM-003', name: 'City Hall Rooftop', location: '789 Pine Ln', status: 'Offline', lastSeen: '2025-06-14 22:15:00' },
-  { id: 'CAM-004', name: 'Highway 101 Overpass', location: 'Mile 42, H-101', status: 'Online', lastSeen: '2025-06-15 10:30:00' },
-  { id: 'CAM-005', name: 'Metro Station Platform 2', location: 'Central Station', status: 'Online', lastSeen: '2025-06-15 10:30:00' },
-  { id: 'CAM-006', name: 'Port Authority Gate 3', location: 'SeaPort Blvd', status: 'Warning', lastSeen: '2025-06-15 10:28:00' },
+  { 
+    id: 'CAM-001', 
+    name: 'Downtown Square Cam', 
+    location: '123 Main St', 
+    status: 'Online', 
+    lastSeen: '2025-06-15 10:30:00',
+    ip: '192.168.1.101',
+    port: 554,
+    resolution: '1920x1080',
+    fps: 30,
+    lat: 40.7128,
+    lng: -74.0060,
+    isPtz: false
+  },
+  { 
+    id: 'CAM-002', 
+    name: 'Central Park Entrance', 
+    location: '456 Oak Ave', 
+    status: 'Online', 
+    lastSeen: '2025-06-15 10:30:00',
+    ip: '192.168.1.102',
+    port: 554,
+    resolution: '1920x1080',
+    fps: 25,
+    lat: 40.7829,
+    lng: -73.9654,
+    isPtz: true
+  },
+  { 
+    id: 'CAM-003', 
+    name: 'City Hall Rooftop', 
+    location: '789 Pine Ln', 
+    status: 'Offline', 
+    lastSeen: '2025-06-14 22:15:00',
+    ip: '192.168.1.103',
+    port: 554,
+    resolution: '1280x720',
+    fps: 20,
+    lat: 40.7282,
+    lng: -74.0776,
+    isPtz: false
+  },
+  { 
+    id: 'CAM-004', 
+    name: 'Highway 101 Overpass', 
+    location: 'Mile 42, H-101', 
+    status: 'Online', 
+    lastSeen: '2025-06-15 10:30:00',
+    ip: '192.168.1.104',
+    port: 554,
+    resolution: '1920x1080',
+    fps: 30,
+    lat: 40.6892,
+    lng: -74.0445,
+    isPtz: false
+  },
+  { 
+    id: 'CAM-005', 
+    name: 'Metro Station Platform 2', 
+    location: 'Central Station', 
+    status: 'Online', 
+    lastSeen: '2025-06-15 10:30:00',
+    ip: '192.168.1.105',
+    port: 554,
+    resolution: '1920x1080',
+    fps: 25,
+    lat: 40.7589,
+    lng: -73.9851,
+    isPtz: true
+  },
+  { 
+    id: 'CAM-006', 
+    name: 'Port Authority Gate 3', 
+    location: 'SeaPort Blvd', 
+    status: 'Warning', 
+    lastSeen: '2025-06-15 10:28:00',
+    ip: '192.168.1.106',
+    port: 554,
+    resolution: '1280x720',
+    fps: 15,
+    lat: 40.7484,
+    lng: -73.9857,
+    isPtz: false
+  },
 ];
 
 export const moduleSummary: ModuleCardData[] = [
