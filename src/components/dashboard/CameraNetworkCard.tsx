@@ -1,18 +1,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cameras } from "@/lib/placeholder-data";
-import { Video, Camera, CameraOff, ChevronDown, ChevronUp } from "lucide-react";
+import { Video, Camera, CameraOff, Eye, Users } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Camera as CameraType } from "@/lib/types";
 import CameraDetailsDialog from "./CameraDetailsDialog";
+import CameraNetworkModal from "./CameraNetworkModal";
 
 const CameraNetworkCard = () => {
-  const [showActiveCameras, setShowActiveCameras] = useState(false);
-  const [showInactiveCameras, setShowInactiveCameras] = useState(false);
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [networkModalOpen, setNetworkModalOpen] = useState(false);
 
   const activeCameras = cameras.filter(cam => cam.status === 'Online');
   const inactiveCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning');
@@ -34,6 +34,11 @@ const CameraNetworkCard = () => {
     // TODO: Implement delete functionality
   };
 
+  const handleViewFrame = (camera: CameraType) => {
+    console.log('View frame for camera:', camera);
+    // TODO: Implement frame viewing
+  };
+
   return (
     <>
       <Card className="col-span-full md:col-span-1">
@@ -44,90 +49,50 @@ const CameraNetworkCard = () => {
         <CardContent className="space-y-3">
           <div className="text-2xl font-bold">{cameras.length} Total</div>
           
-          {/* Horizontally aligned camera status tabs */}
-          <div className="flex gap-4">
-            {/* Active Cameras Section */}
-            <div 
-              className="flex-1 cursor-pointer"
-              onClick={() => setShowActiveCameras(!showActiveCameras)}
-            >
-              <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors">
-                <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                  <Camera className="h-3 w-3 mr-1" />
-                  {activeCameras.length} Online
-                </Badge>
-                {showActiveCameras ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </div>
+          {/* Camera Status Summary */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                <Camera className="h-3 w-3 mr-1" />
+                {activeCameras.length} Online
+              </Badge>
             </div>
-
-            {/* Inactive Cameras Section */}
-            <div 
-              className="flex-1 cursor-pointer"
-              onClick={() => setShowInactiveCameras(!showInactiveCameras)}
-            >
-              <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors">
-                <Badge variant="destructive">
-                  <CameraOff className="h-3 w-3 mr-1" />
-                  {inactiveCameras.length} Offline
-                </Badge>
-                {showInactiveCameras ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </div>
+            
+            <div className="flex items-center justify-between">
+              <Badge variant="destructive">
+                <CameraOff className="h-3 w-3 mr-1" />
+                {inactiveCameras.length} Offline
+              </Badge>
             </div>
           </div>
           
-          {/* Active Cameras List */}
-          {showActiveCameras && (
-            <div className="space-y-1 pl-2 border-l-2 border-green-500">
-              {activeCameras.map((camera) => (
-                <div 
-                  key={camera.id} 
-                  className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
-                  onClick={() => handleCameraClick(camera)}
-                >
-                  <div className="flex items-center gap-2 text-xs">
-                    <Camera className="h-3 w-3 text-green-500" />
-                    <span className="font-medium">{camera.name}</span>
-                  </div>
-                  <Badge variant="default" className="bg-green-500 text-xs px-1 py-0">
-                    Online
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Inactive Cameras List */}
-          {showInactiveCameras && (
-            <div className="space-y-1 pl-2 border-l-2 border-red-500">
-              {inactiveCameras.map((camera) => (
-                <div 
-                  key={camera.id} 
-                  className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer"
-                  onClick={() => handleCameraClick(camera)}
-                >
-                  <div className="flex items-center gap-2 text-xs">
-                    <CameraOff className={cn(
-                      "h-3 w-3",
-                      camera.status === 'Offline' ? "text-red-500" : "text-yellow-500"
-                    )} />
-                    <span className="font-medium">{camera.name}</span>
-                  </div>
-                  <Badge variant={camera.status === 'Offline' ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
-                    {camera.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* View All Button */}
+          <Button 
+            onClick={() => setNetworkModalOpen(true)}
+            variant="outline" 
+            className="w-full"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View All Cameras
+          </Button>
         </CardContent>
       </Card>
 
+      {/* Camera Details Dialog */}
       <CameraDetailsDialog
         camera={selectedCamera}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      {/* Camera Network Modal */}
+      <CameraNetworkModal
+        open={networkModalOpen}
+        onOpenChange={setNetworkModalOpen}
+        onEditCamera={handleEdit}
+        onViewFrame={handleViewFrame}
       />
     </>
   );

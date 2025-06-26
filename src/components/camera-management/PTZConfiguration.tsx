@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,15 +70,13 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
 
   const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
+  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const rect = element.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    if (isSettingPosition && newPositionName) {
+    if (isSettingPosition && newPositionName && ptzPositions.length < 5) {
       const newPosition: PTZPosition = {
         id: Date.now().toString(),
         name: newPositionName,
@@ -168,7 +167,7 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RotateCw className="h-5 w-5" />
-            PTZ Camera Configuration
+            PTZ Camera Configuration (Max 5 Positions)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -182,6 +181,7 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                   value={newPositionName}
                   onChange={(e) => setNewPositionName(e.target.value)}
                   className="w-32"
+                  disabled={ptzPositions.length >= 5}
                 />
                 <Select value={selectedZoom} onValueChange={setSelectedZoom}>
                   <SelectTrigger className="w-20">
@@ -192,17 +192,21 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                     <SelectItem value="2">2x</SelectItem>
                     <SelectItem value="3">3x</SelectItem>
                     <SelectItem value="4">4x</SelectItem>
+                    <SelectItem value="5">5x</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
                   variant={isSettingPosition ? "default" : "outline"}
                   size="sm"
                   onClick={() => setIsSettingPosition(!isSettingPosition)}
-                  disabled={!newPositionName}
+                  disabled={!newPositionName || ptzPositions.length >= 5}
                 >
                   <Target className="h-4 w-4 mr-1" />
                   {isSettingPosition ? 'Click on frame' : 'Set Position'}
                 </Button>
+                {ptzPositions.length >= 5 && (
+                  <Badge variant="secondary">Max positions reached</Badge>
+                )}
               </div>
             </div>
             
@@ -235,7 +239,9 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                       }}
                     >
                       <div className="relative group">
-                        <div className={`w-4 h-4 border-2 border-white rounded-full shadow-lg ${selectedPosition === position.id ? 'bg-green-500' : 'bg-blue-500'}`} />
+                        <div className={`w-6 h-6 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white text-xs font-bold ${selectedPosition === position.id ? 'bg-green-500' : 'bg-blue-500'}`}>
+                          {ptzPositions.indexOf(position) + 1}
+                        </div>
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                           {position.name} ({position.zoom}x)
                         </div>
@@ -245,45 +251,22 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                     {/* Analytics Lines for this position */}
                     {selectedPosition === position.id && position.analyticsLines.map((line) => (
                       <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
-                        {line.type === 'in-out-counting' && line.points.length === 2 ? (
-                          <g>
-                            <line
-                              x1={`${line.points[0].x}%`}
-                              y1={`${line.points[0].y}%`}
-                              x2={`${line.points[1].x}%`}
-                              y2={`${line.points[1].y}%`}
-                              stroke={line.color}
-                              strokeWidth="3"
-                            />
-                            <text
-                              x={`${(line.points[0].x + line.points[1].x) / 2}%`}
-                              y={`${(line.points[0].y + line.points[1].y) / 2 - 2}%`}
-                              fill={line.color}
-                              fontSize="12"
-                              textAnchor="middle"
-                            >
-                              {line.name}
-                            </text>
-                          </g>
-                        ) : (
-                          <g>
-                            <polyline
-                              points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
-                              stroke={line.color}
-                              strokeWidth="3"
-                              fill="none"
-                            />
-                            {line.points.length > 0 && (
-                              <text
-                                x={`${line.points[0].x}%`}
-                                y={`${line.points[0].y - 2}%`}
-                                fill={line.color}
-                                fontSize="12"
-                              >
-                                {line.name}
-                              </text>
-                            )}
-                          </g>
+                        <polyline
+                          points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                          stroke={line.color}
+                          strokeWidth="3"
+                          fill="none"
+                        />
+                        {line.points.length > 0 && (
+                          <text
+                            x={`${line.points[0].x}%`}
+                            y={`${line.points[0].y - 2}%`}
+                            fill={line.color}
+                            fontSize="12"
+                            fontWeight="bold"
+                          >
+                            {line.name}
+                          </text>
                         )}
                       </svg>
                     ))}
@@ -293,23 +276,21 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                 {/* Current drawing line */}
                 {isDrawingLine && currentLine.length > 0 && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                    {selectedAnalyticType === 'in-out-counting' && currentLine.length === 2 ? (
-                      <line
-                        x1={`${currentLine[0].x}%`}
-                        y1={`${currentLine[0].y}%`}
-                        x2={`${currentLine[1].x}%`}
-                        y2={`${currentLine[1].y}%`}
-                        stroke={lineColor}
-                        strokeWidth="3"
+                    <polyline
+                      points={currentLine.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                      stroke={lineColor}
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                    {currentLine.map((point, index) => (
+                      <circle
+                        key={index}
+                        cx={`${point.x}%`}
+                        cy={`${point.y}%`}
+                        r="3"
+                        fill={lineColor}
                       />
-                    ) : (
-                      <polyline
-                        points={currentLine.map(p => `${p.x}%,${p.y}%`).join(' ')}
-                        stroke={lineColor}
-                        strokeWidth="3"
-                        fill="none"
-                      />
-                    )}
+                    ))}
                   </svg>
                 )}
               </div>
@@ -317,21 +298,30 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
             
             {isSettingPosition && (
               <p className="text-sm text-muted-foreground">
-                Click on the camera frame to set the PTZ position for "{newPositionName}"
+                Click on the camera frame to set the PTZ position for "{newPositionName}" ({ptzPositions.length}/5 positions used)
               </p>
             )}
 
             {isDrawingLine && (
               <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  {selectedAnalyticType === 'in-out-counting' 
-                    ? `Drawing counting line "${lineName}" - Click 2 points to create line`
-                    : `Drawing border line "${lineName}" - Click multiple points, then finish`
-                  }
+                  Drawing "{lineName}" - Click multiple points to create the line, then finish
                 </p>
-                <Button onClick={finishLine} size="sm" disabled={currentLine.length < 2}>
-                  Finish Line
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={finishLine} size="sm" disabled={currentLine.length < 2}>
+                    Finish Line
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsDrawingLine(false);
+                      setCurrentLine([]);
+                    }} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -348,7 +338,7 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                   <SelectContent>
                     {ptzPositions.map((position) => (
                       <SelectItem key={position.id} value={position.id}>
-                        {position.name}
+                        Position {ptzPositions.indexOf(position) + 1}: {position.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -482,22 +472,23 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
           {/* Saved Positions */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Saved PTZ Positions ({ptzPositions.length})</Label>
+              <Label>Saved PTZ Positions ({ptzPositions.length}/5)</Label>
             </div>
             
             {ptzPositions.length === 0 ? (
               <p className="text-sm text-muted-foreground">No positions saved yet</p>
             ) : (
               <div className="grid gap-2">
-                {ptzPositions.map((position) => (
+                {ptzPositions.map((position, index) => (
                   <div key={position.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-blue-500" />
+                      <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        {index + 1}
+                      </div>
                       <div>
                         <span className="font-medium">{position.name}</span>
                         <p className="text-xs text-muted-foreground">
-                          Position: {position.position.x.toFixed(1)}%, {position.position.y.toFixed(1)}% | Zoom: {position.zoom}x
-                          {position.analyticsLines.length > 0 && ` | ${position.analyticsLines.length} analytics lines`}
+                          Zoom: {position.zoom}x | Lines: {position.analyticsLines.length}
                         </p>
                       </div>
                     </div>
@@ -520,7 +511,7 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Time-based PTZ Schedule
+                Time-based PTZ Schedule with Analytics
               </Label>
               <Button onClick={addSchedule} size="sm" disabled={ptzPositions.length === 0}>
                 <Plus className="h-4 w-4 mr-1" />
@@ -585,15 +576,21 @@ const PTZConfiguration = ({ frameUrl, selectedAnalytics, onConfigurationComplete
                             <SelectValue placeholder="Select position" />
                           </SelectTrigger>
                           <SelectContent>
-                            {ptzPositions.map((position) => (
+                            {ptzPositions.map((position, index) => (
                               <SelectItem key={position.id} value={position.id}>
-                                {position.name}
+                                Position {index + 1}: {position.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
+                    
+                    {schedule.positionId && (
+                      <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
+                        During this schedule, the camera will automatically move to the selected position and activate its configured analytics lines for monitoring.
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
