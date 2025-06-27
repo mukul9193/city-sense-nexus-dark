@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -505,10 +506,10 @@ const AddCamera = () => {
               </CardContent>
             </Card>
 
-            {/* Camera View & Configuration */}
+            {/* Main Configuration Layout */}
             {hasLineBasedAnalytics && (
               <div className="grid lg:grid-cols-2 gap-6">
-                {/* Left Side - Camera Frame with integrated PTZ and Line Drawing */}
+                {/* LEFT SIDE - Camera View & Configuration */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -578,6 +579,72 @@ const AddCamera = () => {
                                 ))}
                               </SelectContent>
                             </Select>
+                          </div>
+                        )}
+
+                        {/* PTZ Schedules */}
+                        {ptzPositions.length > 0 && (
+                          <div className="space-y-3 p-3 bg-yellow-50 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <Label className="flex items-center gap-2 font-medium">
+                                <Clock className="h-4 w-4" />
+                                PTZ Schedule
+                              </Label>
+                              <Button onClick={addSchedule} size="sm">
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add
+                              </Button>
+                            </div>
+
+                            {ptzSchedules.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No schedules configured</p>
+                            ) : (
+                              <div className="space-y-2 max-h-32 overflow-y-auto">
+                                {ptzSchedules.map((schedule) => (
+                                  <div key={schedule.id} className="flex items-center gap-2 p-2 bg-white rounded border">
+                                    <Checkbox
+                                      checked={schedule.enabled}
+                                      onCheckedChange={(checked) => updateSchedule(schedule.id, 'enabled', checked)}
+                                    />
+                                    <Input
+                                      value={schedule.name}
+                                      onChange={(e) => updateSchedule(schedule.id, 'name', e.target.value)}
+                                      className="w-20 h-6 text-xs"
+                                    />
+                                    <Input
+                                      type="time"
+                                      value={schedule.startTime}
+                                      onChange={(e) => updateSchedule(schedule.id, 'startTime', e.target.value)}
+                                      className="w-16 h-6 text-xs"
+                                    />
+                                    <Input
+                                      type="time"
+                                      value={schedule.endTime}
+                                      onChange={(e) => updateSchedule(schedule.id, 'endTime', e.target.value)}
+                                      className="w-16 h-6 text-xs"
+                                    />
+                                    <Select 
+                                      value={schedule.positionId} 
+                                      onValueChange={(value) => updateSchedule(schedule.id, 'positionId', value)}
+                                    >
+                                      <SelectTrigger className="w-20 h-6 text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {ptzPositions.map((position, index) => (
+                                          <SelectItem key={position.id} value={position.id}>
+                                            {index + 1}: {position.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Button variant="ghost" size="sm" onClick={() => deleteSchedule(schedule.id)}>
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -674,76 +741,10 @@ const AddCamera = () => {
                         </div>
                       </div>
                     )}
-
-                    {/* PTZ Schedules */}
-                    {cameraData.isPTZ && ptzPositions.length > 0 && (
-                      <div className="space-y-3 p-3 bg-yellow-50 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <Label className="flex items-center gap-2 font-medium">
-                            <Clock className="h-4 w-4" />
-                            PTZ Schedule
-                          </Label>
-                          <Button onClick={addSchedule} size="sm">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add
-                          </Button>
-                        </div>
-
-                        {ptzSchedules.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No schedules configured</p>
-                        ) : (
-                          <div className="space-y-2 max-h-32 overflow-y-auto">
-                            {ptzSchedules.map((schedule) => (
-                              <div key={schedule.id} className="flex items-center gap-2 p-2 bg-white rounded border">
-                                <Checkbox
-                                  checked={schedule.enabled}
-                                  onCheckedChange={(checked) => updateSchedule(schedule.id, 'enabled', checked)}
-                                />
-                                <Input
-                                  value={schedule.name}
-                                  onChange={(e) => updateSchedule(schedule.id, 'name', e.target.value)}
-                                  className="w-20 h-6 text-xs"
-                                />
-                                <Input
-                                  type="time"
-                                  value={schedule.startTime}
-                                  onChange={(e) => updateSchedule(schedule.id, 'startTime', e.target.value)}
-                                  className="w-16 h-6 text-xs"
-                                />
-                                <Input
-                                  type="time"
-                                  value={schedule.endTime}
-                                  onChange={(e) => updateSchedule(schedule.id, 'endTime', e.target.value)}
-                                  className="w-16 h-6 text-xs"
-                                />
-                                <Select 
-                                  value={schedule.positionId} 
-                                  onValueChange={(value) => updateSchedule(schedule.id, 'positionId', value)}
-                                >
-                                  <SelectTrigger className="w-20 h-6 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {ptzPositions.map((position, index) => (
-                                      <SelectItem key={position.id} value={position.id}>
-                                        {index + 1}: {position.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <Button variant="ghost" size="sm" onClick={() => deleteSchedule(schedule.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
-                {/* Right Side - Analytics Configuration */}
+                {/* RIGHT SIDE - Analytics Configuration */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
