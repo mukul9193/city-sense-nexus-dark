@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera, TestTube, Settings, MapPin, Network, Eye, ArrowLeft, ArrowRight, RotateCw, Users, Target, Plus, Trash2, Clock } from "lucide-react";
 import CameraTestPreview from "@/components/camera-management/CameraTestPreview";
 import BorderJumpingSetup from "@/components/camera-management/BorderJumpingSetup";
@@ -91,13 +90,13 @@ const AddCamera = () => {
   const [countType, setCountType] = useState<'people' | 'vehicles' | 'objects'>('people');
 
   const analytics = [
-    { id: 'frs', name: 'Face Recognition System (FRS)', description: 'Detect and recognize faces' },
-    { id: 'object-detection', name: 'Object Detection', description: 'Detect vehicles, people, and objects' },
-    { id: 'anpr', name: 'ANPR (License Plate Recognition)', description: 'Automatic number plate recognition' },
-    { id: 'border-jumping', name: 'Border Jumping Detection', description: 'Detect boundary crossings' },
-    { id: 'in-out-counting', name: 'In/Out Counting', description: 'Count objects crossing virtual lines' },
-    { id: 'crowd-analysis', name: 'Crowd Analysis', description: 'Monitor crowd density and behavior' },
-    { id: 'loitering', name: 'Loitering Detection', description: 'Detect people staying in areas too long' }
+    { id: 'frs', name: 'Face Recognition System (FRS)', description: 'Detect and recognize faces', needsLines: false },
+    { id: 'object-detection', name: 'Object Detection', description: 'Detect vehicles, people, and objects', needsLines: false },
+    { id: 'anpr', name: 'ANPR (License Plate Recognition)', description: 'Automatic number plate recognition', needsLines: false },
+    { id: 'border-jumping', name: 'Border Jumping Detection', description: 'Detect boundary crossings', needsLines: true },
+    { id: 'in-out-counting', name: 'In/Out Counting', description: 'Count objects crossing virtual lines', needsLines: true },
+    { id: 'crowd-analysis', name: 'Crowd Analysis', description: 'Monitor crowd density and behavior', needsLines: false },
+    { id: 'loitering', name: 'Loitering Detection', description: 'Detect people staying in areas too long', needsLines: true }
   ];
 
   const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
@@ -161,19 +160,20 @@ const AddCamera = () => {
       setPtzPositions(prev => [...prev, newPosition]);
       setNewPositionName('');
       setIsSettingPosition(false);
-    } else if (isDrawingLine && selectedPosition) {
+    } else if (isDrawingLine && (cameraData.isPTZ ? selectedPosition : true)) {
       setCurrentLine(prev => [...prev, { x, y }]);
     }
   };
 
   const startDrawingLine = () => {
-    if (!selectedPosition || !lineName) return;
+    if (!lineName) return;
+    if (cameraData.isPTZ && !selectedPosition) return;
     setIsDrawingLine(true);
     setCurrentLine([]);
   };
 
   const finishLine = () => {
-    if (currentLine.length < 2 || !selectedPosition) return;
+    if (currentLine.length < 2) return;
 
     const newLine: AnalyticsLine = {
       id: Date.now().toString(),
@@ -187,11 +187,20 @@ const AddCamera = () => {
       })
     };
 
-    setPtzPositions(prev => prev.map(pos => 
-      pos.id === selectedPosition 
-        ? { ...pos, analyticsLines: [...pos.analyticsLines, newLine] }
-        : pos
-    ));
+    if (cameraData.isPTZ) {
+      setPtzPositions(prev => prev.map(pos => 
+        pos.id === selectedPosition 
+          ? { ...pos, analyticsLines: [...pos.analyticsLines, newLine] }
+          : pos
+      ));
+    } else {
+      // For static camera, add to the single static position
+      setPtzPositions(prev => prev.map(pos => 
+        pos.id === 'static' 
+          ? { ...pos, analyticsLines: [...pos.analyticsLines, newLine] }
+          : pos
+      ));
+    }
 
     setCurrentLine([]);
     setIsDrawingLine(false);
@@ -199,11 +208,19 @@ const AddCamera = () => {
   };
 
   const deleteAnalyticsLine = (positionId: string, lineId: string) => {
-    setPtzPositions(prev => prev.map(pos => 
-      pos.id === positionId 
-        ? { ...pos, analyticsLines: pos.analyticsLines.filter(line => line.id !== lineId) }
-        : pos
-    ));
+    if (positionId === 'static') {
+      setPtzPositions(prev => prev.map(pos => 
+        pos.id === 'static' 
+          ? { ...pos, analyticsLines: pos.analyticsLines.filter(line => line.id !== lineId) }
+          : pos
+      ));
+    } else {
+      setPtzPositions(prev => prev.map(pos => 
+        pos.id === positionId 
+          ? { ...pos, analyticsLines: pos.analyticsLines.filter(line => line.id !== lineId) }
+          : pos
+      ));
+    }
   };
 
   const addSchedule = () => {
@@ -230,10 +247,14 @@ const AddCamera = () => {
 
   const deletePosition = (id: string) => {
     setPtzPositions(prev => prev.filter(position => position.id !== id));
+    if (selectedPosition === id) {
+      setSelectedPosition('');
+    }
   };
 
-  const availableAnalytics = selectedAnalytics.filter(a => ['border-jumping', 'in-out-counting'].includes(a));
+  const availableAnalytics = selectedAnalytics.filter(a => ['border-jumping', 'in-out-counting', 'loitering'].includes(a));
   const selectedPositionData = ptzPositions.find(pos => pos.id === selectedPosition);
+  const hasLineBasedAnalytics = selectedAnalytics.some(a => analytics.find(an => an.id === a)?.needsLines);
 
   const getStepTitle = () => {
     switch (currentStep) {
@@ -480,8 +501,9 @@ const AddCamera = () => {
                         onCheckedChange={(checked) => handleAnalyticsChange(analytic.id, checked as boolean)}
                       />
                       <div className="space-y-1 flex-1">
-                        <Label htmlFor={analytic.id} className="text-sm font-medium cursor-pointer">
+                        <Label htmlFor={analytic.id} className="text-sm font-medium cursor-pointer flex items-center gap-2">
                           {analytic.name}
+                          {analytic.needsLines && <Badge variant="outline" className="text-xs">Line Drawing</Badge>}
                         </Label>
                         <p className="text-xs text-muted-foreground">
                           {analytic.description}
@@ -493,465 +515,486 @@ const AddCamera = () => {
               </CardContent>
             </Card>
 
-            {/* PTZ Configuration for Line-Based Analytics */}
-            {cameraData.isPTZ && availableAnalytics.length > 0 && (
+            {/* Line Drawing & Configuration Section */}
+            {hasLineBasedAnalytics && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <RotateCw className="h-5 w-5" />
-                    PTZ Position & Analytics Setup (Max 5 Positions)
+                    {cameraData.isPTZ ? <RotateCw className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
+                    {cameraData.isPTZ ? 'PTZ Positions & Analytics Lines Setup' : 'Analytics Lines Configuration'}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Frame with Position Markers and Analytics Lines */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Camera View & Position Setup</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Position name"
-                          value={newPositionName}
-                          onChange={(e) => setNewPositionName(e.target.value)}
-                          className="w-32"
-                          disabled={ptzPositions.length >= 5}
-                        />
-                        <Select value={selectedZoom} onValueChange={setSelectedZoom}>
-                          <SelectTrigger className="w-20">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1x</SelectItem>
-                            <SelectItem value="2">2x</SelectItem>
-                            <SelectItem value="3">3x</SelectItem>
-                            <SelectItem value="4">4x</SelectItem>
-                            <SelectItem value="5">5x</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant={isSettingPosition ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setIsSettingPosition(!isSettingPosition)}
-                          disabled={!newPositionName || ptzPositions.length >= 5}
-                        >
-                          <Target className="h-4 w-4 mr-1" />
-                          {isSettingPosition ? 'Click on frame' : 'Set Position'}
-                        </Button>
-                        {ptzPositions.length >= 5 && (
-                          <Badge variant="secondary">Max positions reached</Badge>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="relative border rounded-lg overflow-hidden">
-                      <div 
-                        className={`relative ${isSettingPosition || isDrawingLine ? 'cursor-crosshair' : 'cursor-default'}`}
-                        onClick={handleCanvasClick}
-                        style={{ aspectRatio: '16/9' }}
-                      >
-                        {testFrameUrl ? (
-                          <img 
-                            src={testFrameUrl} 
-                            alt="Camera Frame" 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="aspect-video bg-black flex items-center justify-center text-white">
-                            Test camera connection to see frame
-                          </div>
-                        )}
-                        
-                        {/* Position Markers */}
-                        {ptzPositions.map((position) => (
-                          <div key={position.id}>
-                            <div
-                              className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                              style={{
-                                left: `${position.position.x}%`,
-                                top: `${position.position.y}%`
-                              }}
-                            >
-                              <div className="relative group">
-                                <div className={`w-6 h-6 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white text-xs font-bold ${selectedPosition === position.id ? 'bg-green-500' : 'bg-blue-500'}`}>
-                                  {ptzPositions.indexOf(position) + 1}
-                                </div>
-                                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                  {position.name} ({position.zoom}x)
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Analytics Lines for this position */}
-                            {selectedPosition === position.id && position.analyticsLines.map((line) => (
-                              <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
-                                <polyline
-                                  points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
-                                  stroke={line.color}
-                                  strokeWidth="3"
-                                  fill="none"
-                                />
-                                {line.points.length > 0 && (
-                                  <text
-                                    x={`${line.points[0].x}%`}
-                                    y={`${line.points[0].y - 2}%`}
-                                    fill={line.color}
-                                    fontSize="12"
-                                    fontWeight="bold"
-                                  >
-                                    {line.name}
-                                  </text>
-                                )}
-                              </svg>
-                            ))}
-                          </div>
-                        ))}
-
-                        {/* Current drawing line */}
-                        {isDrawingLine && currentLine.length > 0 && (
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                            <polyline
-                              points={currentLine.map(p => `${p.x}%,${p.y}%`).join(' ')}
-                              stroke={lineColor}
-                              strokeWidth="3"
-                              fill="none"
-                            />
-                            {currentLine.map((point, index) => (
-                              <circle
-                                key={index}
-                                cx={`${point.x}%`}
-                                cy={`${point.y}%`}
-                                r="3"
-                                fill={lineColor}
-                              />
-                            ))}
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {isSettingPosition && (
-                      <p className="text-sm text-muted-foreground">
-                        Click on the camera frame to set the PTZ position for "{newPositionName}" ({ptzPositions.length}/5 positions used)
-                      </p>
-                    )}
-
-                    {isDrawingLine && (
-                      <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          Drawing "{lineName}" - Click multiple points to create the line, then finish
-                        </p>
-                        <div className="flex gap-2">
-                          <Button onClick={finishLine} size="sm" disabled={currentLine.length < 2}>
-                            Finish Line
-                          </Button>
-                          <Button 
-                            onClick={() => {
-                              setIsDrawingLine(false);
-                              setCurrentLine([]);
-                            }} 
-                            variant="outline" 
-                            size="sm"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Analytics Lines Configuration */}
-                  {ptzPositions.length > 0 && (
+                <CardContent>
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Left Side - Frame with Line Drawing */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label>Analytics Lines for PTZ Positions</Label>
-                        <Select value={selectedPosition} onValueChange={setSelectedPosition}>
-                          <SelectTrigger className="w-48">
-                            <SelectValue placeholder="Select PTZ position" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ptzPositions.map((position) => (
-                              <SelectItem key={position.id} value={position.id}>
-                                Position {ptzPositions.indexOf(position) + 1}: {position.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label>Camera View & Line Drawing</Label>
+                        {cameraData.isPTZ && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Position name"
+                              value={newPositionName}
+                              onChange={(e) => setNewPositionName(e.target.value)}
+                              className="w-32"
+                              disabled={ptzPositions.length >= 5}
+                            />
+                            <Select value={selectedZoom} onValueChange={setSelectedZoom}>
+                              <SelectTrigger className="w-20">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1x</SelectItem>
+                                <SelectItem value="2">2x</SelectItem>
+                                <SelectItem value="3">3x</SelectItem>
+                                <SelectItem value="4">4x</SelectItem>
+                                <SelectItem value="5">5x</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              variant={isSettingPosition ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setIsSettingPosition(!isSettingPosition)}
+                              disabled={!newPositionName || ptzPositions.length >= 5}
+                            >
+                              <Target className="h-4 w-4 mr-1" />
+                              {isSettingPosition ? 'Click on frame' : 'Set Position'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
-                      {selectedPosition && (
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <h4 className="font-medium">Draw Analytics Lines</h4>
-                            
+                      {/* Camera Frame */}
+                      <div className="relative border rounded-lg overflow-hidden">
+                        <div 
+                          className={`relative ${isSettingPosition || isDrawingLine ? 'cursor-crosshair' : 'cursor-default'}`}
+                          onClick={handleCanvasClick}
+                          style={{ aspectRatio: '16/9' }}
+                        >
+                          {testFrameUrl ? (
+                            <img 
+                              src={testFrameUrl} 
+                              alt="Camera Frame" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="aspect-video bg-black flex items-center justify-center text-white">
+                              Test camera connection to see frame
+                            </div>
+                          )}
+                          
+                          {/* PTZ Position Markers */}
+                          {cameraData.isPTZ && ptzPositions.map((position) => (
+                            <div key={position.id}>
+                              <div
+                                className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                style={{
+                                  left: `${position.position.x}%`,
+                                  top: `${position.position.y}%`
+                                }}
+                              >
+                                <div className="relative group">
+                                  <div className={`w-6 h-6 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white text-xs font-bold ${selectedPosition === position.id ? 'bg-green-500' : 'bg-blue-500'}`}>
+                                    {ptzPositions.indexOf(position) + 1}
+                                  </div>
+                                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    {position.name} ({position.zoom}x)
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Analytics Lines for this position */}
+                              {(!cameraData.isPTZ || selectedPosition === position.id) && position.analyticsLines.map((line) => (
+                                <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
+                                  <polyline
+                                    points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                                    stroke={line.color}
+                                    strokeWidth="3"
+                                    fill="none"
+                                  />
+                                  {line.points.length > 0 && (
+                                    <text
+                                      x={`${line.points[0].x}%`}
+                                      y={`${line.points[0].y - 2}%`}
+                                      fill={line.color}
+                                      fontSize="12"
+                                      fontWeight="bold"
+                                    >
+                                      {line.name}
+                                    </text>
+                                  )}
+                                </svg>
+                              ))}
+                            </div>
+                          ))}
+
+                          {/* Static Camera Analytics Lines */}
+                          {!cameraData.isPTZ && ptzPositions[0]?.analyticsLines.map((line) => (
+                            <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
+                              <polyline
+                                points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                                stroke={line.color}
+                                strokeWidth="3"
+                                fill="none"
+                              />
+                              {line.points.length > 0 && (
+                                <text
+                                  x={`${line.points[0].x}%`}
+                                  y={`${line.points[0].y - 2}%`}
+                                  fill={line.color}
+                                  fontSize="12"
+                                  fontWeight="bold"
+                                >
+                                  {line.name}
+                                </text>
+                              )}
+                            </svg>
+                          ))}
+
+                          {/* Current drawing line */}
+                          {isDrawingLine && currentLine.length > 0 && (
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                              <polyline
+                                points={currentLine.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                                stroke={lineColor}
+                                strokeWidth="3"
+                                fill="none"
+                              />
+                              {currentLine.map((point, index) => (
+                                <circle
+                                  key={index}
+                                  cx={`${point.x}%`}
+                                  cy={`${point.y}%`}
+                                  r="3"
+                                  fill={lineColor}
+                                />
+                              ))}
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Drawing Status */}
+                      {isSettingPosition && cameraData.isPTZ && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-muted-foreground">
+                            Click on the camera frame to set the PTZ position for "{newPositionName}" ({ptzPositions.length}/5 positions used)
+                          </p>
+                        </div>
+                      )}
+
+                      {isDrawingLine && (
+                        <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-muted-foreground">
+                            Drawing "{lineName}" - Click multiple points to create the line, then finish
+                          </p>
+                          <div className="flex gap-2">
+                            <Button onClick={finishLine} size="sm" disabled={currentLine.length < 2}>
+                              Finish Line
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setIsDrawingLine(false);
+                                setCurrentLine([]);
+                              }} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Side - Configuration */}
+                    <div className="space-y-4">
+                      {/* PTZ Position Selection */}
+                      {cameraData.isPTZ && (
+                        <div className="space-y-3">
+                          <Label>PTZ Position Selection</Label>
+                          <Select value={selectedPosition} onValueChange={setSelectedPosition}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select or create PTZ position" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ptzPositions.map((position, index) => (
+                                <SelectItem key={position.id} value={position.id}>
+                                  Position {index + 1}: {position.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          
+                          {ptzPositions.length >= 5 && (
+                            <Badge variant="secondary" className="w-fit">Max positions (5) reached</Badge>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Line Drawing Configuration */}
+                      <div className="space-y-3">
+                        <Label>Draw Analytics Lines</Label>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-sm">Analytics Type</Label>
+                          <Select value={selectedAnalyticType} onValueChange={(value: 'border-jumping' | 'in-out-counting') => setSelectedAnalyticType(value)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableAnalytics.includes('border-jumping') && (
+                                <SelectItem value="border-jumping">Border Jumping</SelectItem>
+                              )}
+                              {availableAnalytics.includes('in-out-counting') && (
+                                <SelectItem value="in-out-counting">In/Out Counting</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm">Line Name</Label>
+                          <Input
+                            value={lineName}
+                            onChange={(e) => setLineName(e.target.value)}
+                            placeholder="Enter line name"
+                          />
+                        </div>
+
+                        {selectedAnalyticType === 'in-out-counting' && (
+                          <>
                             <div className="space-y-2">
-                              <Label>Analytics Type</Label>
-                              <Select value={selectedAnalyticType} onValueChange={(value: 'border-jumping' | 'in-out-counting') => setSelectedAnalyticType(value)}>
+                              <Label className="text-sm">Count Type</Label>
+                              <Select value={countType} onValueChange={(value: 'people' | 'vehicles' | 'objects') => setCountType(value)}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {availableAnalytics.includes('border-jumping') && (
-                                    <SelectItem value="border-jumping">Border Jumping</SelectItem>
-                                  )}
-                                  {availableAnalytics.includes('in-out-counting') && (
-                                    <SelectItem value="in-out-counting">In/Out Counting</SelectItem>
-                                  )}
+                                  <SelectItem value="people">People</SelectItem>
+                                  <SelectItem value="vehicles">Vehicles</SelectItem>
+                                  <SelectItem value="objects">Objects</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
 
                             <div className="space-y-2">
-                              <Label>Line Name</Label>
-                              <Input
-                                value={lineName}
-                                onChange={(e) => setLineName(e.target.value)}
-                                placeholder="Enter line name"
+                              <Label className="text-sm">Direction</Label>
+                              <Select value={lineDirection} onValueChange={(value: 'horizontal' | 'vertical') => setLineDirection(value)}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="horizontal">Horizontal</SelectItem>
+                                  <SelectItem value="vertical">Vertical</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </>
+                        )}
+
+                        <div className="space-y-2">
+                          <Label className="text-sm">Line Color</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {colors.map(color => (
+                              <button
+                                key={color}
+                                onClick={() => setLineColor(color)}
+                                className={`w-6 h-6 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
+                                style={{ backgroundColor: color }}
                               />
-                            </div>
+                            ))}
+                          </div>
+                        </div>
 
-                            {selectedAnalyticType === 'in-out-counting' && (
-                              <>
-                                <div className="space-y-2">
-                                  <Label>Count Type</Label>
-                                  <Select value={countType} onValueChange={(value: 'people' | 'vehicles' | 'objects') => setCountType(value)}>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="people">People</SelectItem>
-                                      <SelectItem value="vehicles">Vehicles</SelectItem>
-                                      <SelectItem value="objects">Objects</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                        <Button
+                          onClick={startDrawingLine}
+                          disabled={!lineName || isDrawingLine || (cameraData.isPTZ && !selectedPosition)}
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Start Drawing Line
+                        </Button>
+                      </div>
+
+                      {/* Existing Lines */}
+                      <div className="space-y-3">
+                        <Label>Existing Analytics Lines</Label>
+                        
+                        {cameraData.isPTZ ? (
+                          selectedPositionData && selectedPositionData.analyticsLines.length > 0 ? (
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                              {selectedPositionData.analyticsLines.map((line) => (
+                                <div key={line.id} className="flex items-center justify-between p-2 border rounded text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div 
+                                      className="w-3 h-3 rounded"
+                                      style={{ backgroundColor: line.color }}
+                                    />
+                                    <div>
+                                      <div className="font-medium">{line.name}</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {line.type === 'border-jumping' ? 'Border Jumping' : `${line.countType} • ${line.direction}`}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteAnalyticsLine(selectedPosition, line.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 </div>
-
-                                <div className="space-y-2">
-                                  <Label>Direction</Label>
-                                  <Select value={lineDirection} onValueChange={(value: 'horizontal' | 'vertical') => setLineDirection(value)}>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="horizontal">Horizontal</SelectItem>
-                                      <SelectItem value="vertical">Vertical</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </>
-                            )}
-
-                            <div className="space-y-2">
-                              <Label>Line Color</Label>
-                              <div className="flex flex-wrap gap-2">
-                                {colors.map(color => (
-                                  <button
-                                    key={color}
-                                    onClick={() => setLineColor(color)}
-                                    className={`w-6 h-6 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
-                                    style={{ backgroundColor: color }}
-                                  />
-                                ))}
-                              </div>
+                              ))}
                             </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              {selectedPosition ? "No analytics lines configured for this position" : "Select a PTZ position to view lines"}
+                            </p>
+                          )
+                        ) : (
+                          ptzPositions[0]?.analyticsLines.length > 0 ? (
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                              {ptzPositions[0].analyticsLines.map((line) => (
+                                <div key={line.id} className="flex items-center justify-between p-2 border rounded text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div 
+                                      className="w-3 h-3 rounded"
+                                      style={{ backgroundColor: line.color }}
+                                    />
+                                    <div>
+                                      <div className="font-medium">{line.name}</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {line.type === 'border-jumping' ? 'Border Jumping' : `${line.countType} • ${line.direction}`}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteAnalyticsLine('static', line.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No analytics lines configured</p>
+                          )
+                        )}
+                      </div>
 
-                            <Button
-                              onClick={startDrawingLine}
-                              disabled={!lineName || isDrawingLine}
-                              className="w-full"
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Start Drawing Line
+                      {/* PTZ Positions List */}
+                      {cameraData.isPTZ && (
+                        <div className="space-y-3">
+                          <Label>Saved PTZ Positions ({ptzPositions.length}/5)</Label>
+                          
+                          {ptzPositions.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No positions saved yet</p>
+                          ) : (
+                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                              {ptzPositions.map((position, index) => (
+                                <div key={position.id} className="flex items-center justify-between p-2 border rounded text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                      {index + 1}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">{position.name}</span>
+                                      <p className="text-xs text-muted-foreground">
+                                        Zoom: {position.zoom}x | Lines: {position.analyticsLines.length}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button variant="ghost" size="sm" onClick={() => deletePosition(position.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* PTZ Schedule Configuration */}
+                      {cameraData.isPTZ && ptzPositions.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
+                              PTZ Schedule
+                            </Label>
+                            <Button onClick={addSchedule} size="sm">
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add Schedule
                             </Button>
                           </div>
 
-                          <div className="space-y-3">
-                            <h4 className="font-medium">Existing Lines</h4>
-                            
-                            {selectedPositionData && selectedPositionData.analyticsLines.length > 0 ? (
-                              <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {selectedPositionData.analyticsLines.map((line) => (
-                                  <div key={line.id} className="flex items-center justify-between p-2 border rounded text-sm">
+                          {ptzSchedules.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No schedules configured</p>
+                          ) : (
+                            <div className="space-y-3 max-h-48 overflow-y-auto">
+                              {ptzSchedules.map((schedule) => (
+                                <div key={schedule.id} className="p-3 border rounded-lg space-y-2">
+                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <div 
-                                        className="w-3 h-3 rounded"
-                                        style={{ backgroundColor: line.color }}
+                                      <Checkbox
+                                        checked={schedule.enabled}
+                                        onCheckedChange={(checked) => updateSchedule(schedule.id, 'enabled', checked)}
                                       />
-                                      <div>
-                                        <div className="font-medium">{line.name}</div>
-                                        <div className="text-xs text-muted-foreground">
-                                          {line.type === 'border-jumping' ? 'Border Jumping' : `${line.countType} • ${line.direction}`}
-                                        </div>
-                                      </div>
+                                      <Input
+                                        value={schedule.name}
+                                        onChange={(e) => updateSchedule(schedule.id, 'name', e.target.value)}
+                                        className="w-24 h-6 text-xs"
+                                      />
                                     </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => deleteAnalyticsLine(selectedPosition, line.id)}
-                                    >
+                                    <Button variant="ghost" size="sm" onClick={() => deleteSchedule(schedule.id)}>
                                       <Trash2 className="h-3 w-3" />
                                     </Button>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">No analytics lines configured</p>
-                            )}
-                          </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <Input
+                                      type="time"
+                                      value={schedule.startTime}
+                                      onChange={(e) => updateSchedule(schedule.id, 'startTime', e.target.value)}
+                                      className="h-6 text-xs"
+                                    />
+                                    <Input
+                                      type="time"
+                                      value={schedule.endTime}
+                                      onChange={(e) => updateSchedule(schedule.id, 'endTime', e.target.value)}
+                                      className="h-6 text-xs"
+                                    />
+                                  </div>
+                                  
+                                  <Select 
+                                    value={schedule.positionId} 
+                                    onValueChange={(value) => updateSchedule(schedule.id, 'positionId', value)}
+                                  >
+                                    <SelectTrigger className="h-6 text-xs">
+                                      <SelectValue placeholder="Select position" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {ptzPositions.map((position, index) => (
+                                        <SelectItem key={position.id} value={position.id}>
+                                          {index + 1}: {position.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-
-                  {/* Saved Positions */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>Saved PTZ Positions ({ptzPositions.length}/5)</Label>
-                    </div>
-                    
-                    {ptzPositions.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No positions saved yet</p>
-                    ) : (
-                      <div className="grid gap-2">
-                        {ptzPositions.map((position, index) => (
-                          <div key={position.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                                {index + 1}
-                              </div>
-                              <div>
-                                <span className="font-medium">{position.name}</span>
-                                <p className="text-xs text-muted-foreground">
-                                  Zoom: {position.zoom}x | Lines: {position.analyticsLines.length}
-                                </p>
-                              </div>
-                            </div>
-                            <Button variant="outline" size="sm" onClick={() => deletePosition(position.id)}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Schedule Configuration */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Time-based PTZ Schedule
-                      </Label>
-                      <Button onClick={addSchedule} size="sm" disabled={ptzPositions.length === 0}>
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add Schedule
-                      </Button>
-                    </div>
-
-                    {ptzSchedules.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        {ptzPositions.length === 0 
-                          ? "Create PTZ positions first to set up schedules" 
-                          : "No schedules configured"}
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {ptzSchedules.map((schedule) => (
-                          <div key={schedule.id} className="p-4 border rounded-lg space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={schedule.enabled}
-                                  onCheckedChange={(checked) => updateSchedule(schedule.id, 'enabled', checked)}
-                                />
-                                <Input
-                                  value={schedule.name}
-                                  onChange={(e) => updateSchedule(schedule.id, 'name', e.target.value)}
-                                  className="w-40"
-                                />
-                                <Badge variant={schedule.enabled ? 'default' : 'secondary'}>
-                                  {schedule.enabled ? 'Active' : 'Disabled'}
-                                </Badge>
-                              </div>
-                              <Button variant="outline" size="sm" onClick={() => deleteSchedule(schedule.id)}>
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-4">
-                              <div className="space-y-1">
-                                <Label className="text-xs">Start Time</Label>
-                                <Input
-                                  type="time"
-                                  value={schedule.startTime}
-                                  onChange={(e) => updateSchedule(schedule.id, 'startTime', e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">End Time</Label>
-                                <Input
-                                  type="time"
-                                  value={schedule.endTime}
-                                  onChange={(e) => updateSchedule(schedule.id, 'endTime', e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">PTZ Position</Label>
-                                <Select 
-                                  value={schedule.positionId} 
-                                  onValueChange={(value) => updateSchedule(schedule.id, 'positionId', value)}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select position" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {ptzPositions.map((position, index) => (
-                                      <SelectItem key={position.id} value={position.id}>
-                                        Position {index + 1}: {position.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                            
-                            {schedule.positionId && (
-                              <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
-                                During this schedule, the camera will automatically move to the selected position and activate its configured analytics lines.
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Static Camera Line Drawing */}
-            {!cameraData.isPTZ && availableAnalytics.length > 0 && (
-              <div className="grid gap-6 lg:grid-cols-2">
-                {availableAnalytics.includes('border-jumping') && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowBorderSetup(true)}
-                    className="w-full"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Configure Border Lines on Frame
-                  </Button>
-                )}
-
-                {availableAnalytics.includes('in-out-counting') && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowInOutSetup(true)}
-                    className="w-full"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Configure Counting Lines on Frame
-                  </Button>
-                )}
-              </div>
             )}
 
             <div className="flex justify-between pt-4">
@@ -971,6 +1014,21 @@ const AddCamera = () => {
         return null;
     }
   };
+
+  useEffect(() => {
+    if (!cameraData.isPTZ && hasLineBasedAnalytics && ptzPositions.length === 0) {
+      // Create a default static position for non-PTZ cameras
+      const staticPosition: PTZPosition = {
+        id: 'static',
+        name: 'Static View',
+        position: { x: 50, y: 50 },
+        zoom: 1,
+        analyticsLines: []
+      };
+      setPtzPositions([staticPosition]);
+      setSelectedPosition('static');
+    }
+  }, [cameraData.isPTZ, hasLineBasedAnalytics, ptzPositions.length]);
 
   return (
     <div className="space-y-8">
