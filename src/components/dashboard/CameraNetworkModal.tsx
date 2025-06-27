@@ -191,6 +191,7 @@ const CameraDetailsModal = ({ camera, open, onOpenChange }: CameraDetailsModalPr
 const CameraNetworkModal = ({ open, onOpenChange, onEditCamera, onViewFrame }: CameraNetworkModalProps) => {
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [activeView, setActiveView] = useState<'all' | 'active' | 'inactive'>('all');
   
   const onlineCameras = cameras.filter(cam => cam.status === 'Online');
   const offlineCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning');
@@ -198,6 +199,99 @@ const CameraNetworkModal = ({ open, onOpenChange, onEditCamera, onViewFrame }: C
   const handleCameraClick = (camera: CameraType) => {
     setSelectedCamera(camera);
     setDetailsModalOpen(true);
+  };
+
+  const handleEdit = (camera: CameraType) => {
+    console.log('Edit camera:', camera);
+    setDetailsModalOpen(false);
+    onEditCamera?.(camera);
+  };
+
+  const handleViewFrame = (camera: CameraType) => {
+    console.log('View frame:', camera);
+    setDetailsModalOpen(false);
+    onViewFrame?.(camera);
+  };
+
+  const CameraCard = ({ camera }: { camera: CameraType }) => {
+    const isOnline = camera.status === 'Online';
+    
+    return (
+      <Card 
+        className={cn(
+          "cursor-pointer transition-all duration-200 hover:shadow-md",
+          isOnline 
+            ? "border-green-200 bg-green-50 hover:bg-green-100" 
+            : "border-red-200 bg-red-50 hover:bg-red-100"
+        )}
+        onClick={() => handleCameraClick(camera)}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className={cn(
+              "w-12 h-12 rounded-lg flex items-center justify-center",
+              isOnline ? "bg-green-500" : "bg-red-500"
+            )}>
+              {isOnline ? (
+                <Camera className="h-6 w-6 text-white" />
+              ) : (
+                <CameraOff className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(camera);
+                }}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewFrame(camera);
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="font-medium text-sm truncate">{camera.name}</h3>
+            <p className="text-xs text-muted-foreground truncate">{camera.location}</p>
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant={isOnline ? "default" : "destructive"}
+                className={isOnline ? "bg-green-500 hover:bg-green-600" : ""}
+              >
+                <div className={cn(
+                  "w-2 h-2 rounded-full mr-1",
+                  isOnline ? "bg-white animate-pulse" : "bg-red-200"
+                )} />
+                {isOnline ? "Active" : "Offline"}
+              </Badge>
+              {camera.isPtz && (
+                <Badge variant="secondary" className="text-xs">
+                  PTZ
+                </Badge>
+              )}
+            </div>
+            {!isOnline && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Last seen: {camera.lastSeen}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
@@ -240,63 +334,79 @@ const CameraNetworkModal = ({ open, onOpenChange, onEditCamera, onViewFrame }: C
               </Card>
             </div>
 
-            {/* Online Cameras Grid */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Wifi className="h-5 w-5 text-green-500" />
-                <h3 className="text-lg font-semibold text-green-600">Online Cameras ({onlineCameras.length})</h3>
-              </div>
-              
-              <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
-                {onlineCameras.map((camera) => (
-                  <Card 
-                    key={camera.id} 
-                    className="border-green-200 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
-                    onClick={() => handleCameraClick(camera)}
-                  >
-                    <CardContent className="p-4 text-center">
-                      <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                        <Camera className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="text-sm font-medium truncate">{camera.name}</div>
-                      <div className="text-xs text-green-600 mt-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full inline-block animate-pulse mr-1"></div>
-                        Active
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+            {/* View Toggle */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={activeView === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveView('all')}
+              >
+                All Cameras
+              </Button>
+              <Button
+                variant={activeView === 'active' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveView('active')}
+                className="text-green-600"
+              >
+                <Wifi className="h-4 w-4 mr-1" />
+                Active ({onlineCameras.length})
+              </Button>
+              <Button
+                variant={activeView === 'inactive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveView('inactive')}
+                className="text-red-600"
+              >
+                <WifiOff className="h-4 w-4 mr-1" />
+                Inactive ({offlineCameras.length})
+              </Button>
             </div>
 
-            {/* Offline Cameras Grid */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <WifiOff className="h-5 w-5 text-red-500" />
-                <h3 className="text-lg font-semibold text-red-600">Offline Cameras ({offlineCameras.length})</h3>
+            {/* Camera Grid based on active view */}
+            {(activeView === 'all' || activeView === 'active') && onlineCameras.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Wifi className="h-5 w-5 text-green-500" />
+                  <h3 className="text-lg font-semibold text-green-600">
+                    Active Cameras ({onlineCameras.length})
+                  </h3>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {onlineCameras.map((camera) => (
+                    <CameraCard key={camera.id} camera={camera} />
+                  ))}
+                </div>
               </div>
-              
-              <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
-                {offlineCameras.map((camera) => (
-                  <Card 
-                    key={camera.id} 
-                    className="border-red-200 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
-                    onClick={() => handleCameraClick(camera)}
-                  >
-                    <CardContent className="p-4 text-center">
-                      <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                        <CameraOff className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="text-sm font-medium truncate">{camera.name}</div>
-                      <div className="text-xs text-red-600 mt-1">
-                        <Clock className="h-3 w-3 inline-block mr-1" />
-                        Offline
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+            )}
+
+            {(activeView === 'all' || activeView === 'inactive') && offlineCameras.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <WifiOff className="h-5 w-5 text-red-500" />
+                  <h3 className="text-lg font-semibold text-red-600">
+                    Inactive Cameras ({offlineCameras.length})
+                  </h3>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {offlineCameras.map((camera) => (
+                    <CameraCard key={camera.id} camera={camera} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Empty state */}
+            {((activeView === 'active' && onlineCameras.length === 0) ||
+              (activeView === 'inactive' && offlineCameras.length === 0)) && (
+              <div className="text-center py-8">
+                <div className="text-muted-foreground">
+                  No {activeView} cameras found
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
