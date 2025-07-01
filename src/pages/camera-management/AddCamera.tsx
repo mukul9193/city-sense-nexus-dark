@@ -76,6 +76,7 @@ const AddCamera = () => {
   const [ptzPositions, setPtzPositions] = useState<PTZPosition[]>([]);
   const [currentPTZ, setCurrentPTZ] = useState({ pan: 0, tilt: 0, zoom: 1 });
   const [positionName, setPositionName] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
   
   // Line drawing states
   const [isDrawingLine, setIsDrawingLine] = useState(false);
@@ -108,6 +109,11 @@ const AddCamera = () => {
 
   const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  // Computed values
+  const hasLineBasedAnalytics = selectedAnalytics.some(analyticId => 
+    analytics.find(a => a.id === analyticId)?.needsLines
+  );
 
   const generateRTSP = () => {
     if (cameraData.username && cameraData.password && cameraData.ip && cameraData.port) {
