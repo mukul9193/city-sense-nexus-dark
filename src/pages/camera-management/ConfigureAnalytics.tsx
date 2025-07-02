@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -503,35 +502,38 @@ const ConfigureAnalytics = () => {
                 {/* Line Drawing Configuration (for line-based analytics) */}
                 {analytics.find(a => a.id === selectedAnalyticForConfig)?.needsLines && (
                   <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Line Name</Label>
-                      <Input
-                        value={lineName}
-                        onChange={(e) => setLineName(e.target.value)}
-                        placeholder="Enter line name"
-                      />
-                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Line Name</Label>
+                        <Input
+                          value={lineName}
+                          onChange={(e) => setLineName(e.target.value)}
+                          placeholder="Enter line name"
+                          className="text-sm"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-sm">Direction</Label>
-                      <Select value={lineDirection} onValueChange={(value: typeof lineDirection) => setLineDirection(value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="left-to-right">Left to Right →</SelectItem>
-                          <SelectItem value="right-to-left">Right to Left ←</SelectItem>
-                          <SelectItem value="top-to-bottom">Top to Bottom ↓</SelectItem>
-                          <SelectItem value="bottom-to-top">Bottom to Top ↑</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Direction</Label>
+                        <Select value={lineDirection} onValueChange={(value: typeof lineDirection) => setLineDirection(value)}>
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left-to-right">Left to Right →</SelectItem>
+                            <SelectItem value="right-to-left">Right to Left ←</SelectItem>
+                            <SelectItem value="top-to-bottom">Top to Bottom ↓</SelectItem>
+                            <SelectItem value="bottom-to-top">Bottom to Top ↑</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     {selectedAnalyticForConfig === 'in-out-counting' && (
                       <div className="space-y-2">
                         <Label className="text-sm">Count Type</Label>
                         <Select value={countType} onValueChange={(value: typeof countType) => setCountType(value)}>
-                          <SelectTrigger>
+                          <SelectTrigger className="text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -550,7 +552,7 @@ const ConfigureAnalytics = () => {
                           <button
                             key={color}
                             onClick={() => setLineColor(color)}
-                            className={`w-6 h-6 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
+                            className={`w-5 h-5 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
                             style={{ backgroundColor: color }}
                           />
                         ))}
@@ -561,6 +563,7 @@ const ConfigureAnalytics = () => {
                       onClick={startDrawingLine}
                       disabled={!lineName || isDrawingLine}
                       className="w-full"
+                      size="sm"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Start Drawing Line
@@ -568,48 +571,58 @@ const ConfigureAnalytics = () => {
                   </div>
                 )}
 
-                {/* Saved Positions List */}
+                {/* Saved Positions List - Improved Layout */}
                 <div className="space-y-3">
-                  <Label>Saved Positions</Label>
+                  <Label className="text-sm font-medium">Saved Positions</Label>
                   
                   {ptzPositions.filter(pos => pos.analyticsType === selectedAnalyticForConfig).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No positions saved for this analytics</p>
+                    <p className="text-xs text-muted-foreground italic">No positions saved for this analytics</p>
                   ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
                       {ptzPositions
                         .filter(pos => pos.analyticsType === selectedAnalyticForConfig)
                         .map((position, index) => (
-                          <div key={position.id} className="p-3 border rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
+                          <div key={position.id} className="p-2 border rounded bg-gray-50">
+                            <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline">{index + 1}</Badge>
-                                <span className="font-medium">{position.name}</span>
+                                <Badge variant="secondary" className="text-xs px-1 py-0">
+                                  {index + 1}
+                                </Badge>
+                                <span className="font-medium text-sm truncate max-w-[120px]">
+                                  {position.name}
+                                </span>
                               </div>
-                              <Button variant="ghost" size="sm" onClick={() => deletePosition(position.id)}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => deletePosition(position.id)}
+                                className="h-6 w-6 p-0"
+                              >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                             
                             {cameraData.isPTZ && (
-                              <div className="text-xs text-muted-foreground mb-2">
+                              <div className="text-xs text-muted-foreground mb-1">
                                 Pan: {position.position.pan}° | Tilt: {position.position.tilt}° | Zoom: {position.zoom}x
                               </div>
                             )}
 
                             {position.analyticsLines.length > 0 && (
                               <div className="text-xs text-muted-foreground mb-2">
-                                Lines: {position.analyticsLines.map(line => line.name).join(', ')}
+                                <span className="font-medium">Lines:</span> {position.analyticsLines.map(line => line.name).join(', ')}
                               </div>
                             )}
 
-                            {/* Schedule Management (only for PTZ cameras) */}
+                            {/* Schedule Management (only for PTZ cameras) - Compact Layout */}
                             {cameraData.isPTZ && (
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <Label className="text-sm">Schedules ({position.schedules.length})</Label>
+                                  <Label className="text-xs">Schedules ({position.schedules.length})</Label>
                                   <Button 
                                     size="sm" 
                                     variant="outline"
+                                    className="h-6 text-xs px-2"
                                     onClick={() => {
                                       setCurrentSchedule({
                                         id: position.id,
@@ -623,12 +636,12 @@ const ConfigureAnalytics = () => {
                                     }}
                                   >
                                     <Clock className="h-3 w-3 mr-1" />
-                                    Add Schedule
+                                    Add
                                   </Button>
                                 </div>
 
                                 {position.schedules.map(schedule => (
-                                  <div key={schedule.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs">
+                                  <div key={schedule.id} className="flex items-center gap-1 p-1 bg-white rounded text-xs border">
                                     <Checkbox
                                       checked={schedule.enabled}
                                       onCheckedChange={(checked) => {
@@ -643,21 +656,25 @@ const ConfigureAnalytics = () => {
                                             : pos
                                         ));
                                       }}
+                                      className="h-3 w-3"
                                     />
-                                    <span className="flex-1">{schedule.name}</span>
-                                    <span>{schedule.startTime}-{schedule.endTime}</span>
-                                    <span className="text-blue-600">
+                                    <span className="flex-1 truncate max-w-[80px]">{schedule.name}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {schedule.startTime}-{schedule.endTime}
+                                    </span>
+                                    <Badge variant="outline" className="text-xs px-1 py-0">
                                       {schedule.daysOfWeek.length === 7 ? 'Daily' : 
                                        schedule.daysOfWeek.length === 0 ? 'No days' :
-                                       schedule.daysOfWeek.length <= 3 ? schedule.daysOfWeek.join(', ') : 
-                                       `${schedule.daysOfWeek.length} days`}
-                                    </span>
+                                       schedule.daysOfWeek.length <= 2 ? schedule.daysOfWeek.join(', ') : 
+                                       `${schedule.daysOfWeek.length}d`}
+                                    </Badge>
                                     <Button 
                                       variant="ghost" 
                                       size="sm" 
                                       onClick={() => deleteSchedule(position.id, schedule.id)}
+                                      className="h-4 w-4 p-0"
                                     >
-                                      <Trash2 className="h-3 w-3" />
+                                      <Trash2 className="h-2 w-2" />
                                     </Button>
                                   </div>
                                 ))}
