@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Camera, Settings, ArrowLeft, Target, Plus, Trash2, Clock, ZoomIn, ZoomOut, Navigation } from "lucide-react";
+import { Camera, Settings, ArrowLeft, Target, Plus, Trash2, Clock, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface Point {
@@ -22,6 +22,7 @@ interface AnalyticsLine {
   color: string;
   direction?: 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
   countType?: 'people' | 'vehicles' | 'objects';
+  visible?: boolean;
 }
 
 interface Schedule {
@@ -261,6 +262,19 @@ const ConfigureAnalytics = () => {
     ));
   };
 
+  const toggleLineVisibility = (positionId: string, lineId: string) => {
+    setPtzPositions(prev => prev.map(pos => 
+      pos.id === positionId 
+        ? {
+            ...pos, 
+            analyticsLines: pos.analyticsLines.map(line => 
+              line.id === lineId ? { ...line, visible: !line.visible } : line
+            )
+          }
+        : pos
+    ));
+  };
+
   const getArrowPath = (points: Point[], direction: string) => {
     if (points.length < 2) return '';
     
@@ -312,13 +326,13 @@ const ConfigureAnalytics = () => {
         </Badge>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* LEFT SIDE - HD Camera View */}
-        <Card>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* LEFT SIDE - HD Camera View (Full 1280x720) */}
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Camera className="h-5 w-5" />
-              HD Camera View
+              HD Camera View (1280x720)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -367,48 +381,62 @@ const ConfigureAnalytics = () => {
               </div>
             )}
 
-            {/* HD Camera Frame */}
-            <div className="relative border rounded-lg overflow-hidden">
+            {/* HD Camera Frame - Full 1280x720 */}
+            <div className="relative border-2 rounded-lg overflow-hidden shadow-lg">
               <div 
                 className={`relative ${isDrawingLine ? 'cursor-crosshair' : 'cursor-default'}`}
                 onClick={handleCanvasClick}
-                style={{ aspectRatio: '16/9', minHeight: '400px' }}
+                style={{ 
+                  width: '1280px', 
+                  height: '720px',
+                  maxWidth: '100%',
+                  aspectRatio: '1280/720'
+                }}
               >
-                <div className="w-full h-full bg-black flex items-center justify-center text-white text-lg">
-                  HD Camera Feed ({cameraData.resolution})
+                <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white text-xl font-semibold border-4 border-gray-600">
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📹</div>
+                    <div>HD Camera Feed</div>
+                    <div className="text-sm opacity-75 mt-1">1280 × 720</div>
+                  </div>
                 </div>
                 
                 {/* Display existing analytics lines */}
                 {ptzPositions
                   .filter(pos => pos.analyticsType === selectedAnalyticForConfig)
                   .map(position => 
-                    position.analyticsLines.map((line) => (
-                      <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
-                        <polyline
-                          points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
-                          stroke={line.color}
-                          strokeWidth="3"
-                          fill="none"
-                        />
-                        <path
-                          d={getArrowPath(line.points, line.direction || 'left-to-right')}
-                          stroke={line.color}
-                          strokeWidth="2"
-                          fill="none"
-                        />
-                        {line.points.length > 0 && (
-                          <text
-                            x={`${line.points[0].x}%`}
-                            y={`${line.points[0].y - 2}%`}
-                            fill={line.color}
-                            fontSize="12"
-                            fontWeight="bold"
-                          >
-                            {line.name}
-                          </text>
-                        )}
-                      </svg>
-                    ))
+                    position.analyticsLines
+                      .filter(line => line.visible !== false)
+                      .map((line) => (
+                        <svg key={line.id} className="absolute inset-0 w-full h-full pointer-events-none">
+                          <polyline
+                            points={line.points.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                            stroke={line.color}
+                            strokeWidth="4"
+                            fill="none"
+                            strokeDasharray={line.type === 'loitering' ? '10,5' : 'none'}
+                          />
+                          <path
+                            d={getArrowPath(line.points, line.direction || 'left-to-right')}
+                            stroke={line.color}
+                            strokeWidth="3"
+                            fill="none"
+                          />
+                          {line.points.length > 0 && (
+                            <text
+                              x={`${line.points[0].x}%`}
+                              y={`${line.points[0].y - 2}%`}
+                              fill={line.color}
+                              fontSize="16"
+                              fontWeight="bold"
+                              stroke="white"
+                              strokeWidth="1"
+                            >
+                              {line.name}
+                            </text>
+                          )}
+                        </svg>
+                      ))
                   )}
 
                 {/* Current drawing line */}
@@ -417,14 +445,14 @@ const ConfigureAnalytics = () => {
                     <polyline
                       points={currentLine.map(p => `${p.x}%,${p.y}%`).join(' ')}
                       stroke={lineColor}
-                      strokeWidth="3"
+                      strokeWidth="4"
                       fill="none"
                     />
                     {currentLine.length > 1 && (
                       <path
                         d={getArrowPath(currentLine, lineDirection)}
                         stroke={lineColor}
-                        strokeWidth="2"
+                        strokeWidth="3"
                         fill="none"
                       />
                     )}
@@ -433,8 +461,10 @@ const ConfigureAnalytics = () => {
                         key={index}
                         cx={`${point.x}%`}
                         cy={`${point.y}%`}
-                        r="3"
+                        r="4"
                         fill={lineColor}
+                        stroke="white"
+                        strokeWidth="2"
                       />
                     ))}
                   </svg>
@@ -443,8 +473,8 @@ const ConfigureAnalytics = () => {
             </div>
 
             {isDrawingLine && (
-              <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                <p className="text-sm">Drawing "{lineName}" - Click points to create line</p>
+              <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200">
+                <p className="text-sm font-medium">Drawing "{lineName}" - Click points to create line</p>
                 <div className="flex gap-2">
                   <Button onClick={finishLine} size="sm" disabled={currentLine.length < 2}>
                     Finish Line
@@ -470,12 +500,12 @@ const ConfigureAnalytics = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Analytics Configuration
+              Configuration
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Select Analytics to Configure</Label>
+              <Label>Select Analytics</Label>
               <Select value={selectedAnalyticForConfig} onValueChange={setSelectedAnalyticForConfig}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose analytics type" />
@@ -494,65 +524,65 @@ const ConfigureAnalytics = () => {
             </div>
 
             {selectedAnalyticForConfig && (
-              <div className="space-y-4 p-4 border rounded-lg">
-                <Label className="font-medium">
+              <div className="space-y-4 p-3 border rounded-lg bg-gray-50">
+                <Label className="font-medium text-sm">
                   Configure {analytics.find(a => a.id === selectedAnalyticForConfig)?.name}
                 </Label>
 
-                {/* Line Drawing Configuration (for line-based analytics) */}
+                {/* Line Drawing Configuration */}
                 {analytics.find(a => a.id === selectedAnalyticForConfig)?.needsLines && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-sm">Line Name</Label>
-                        <Input
-                          value={lineName}
-                          onChange={(e) => setLineName(e.target.value)}
-                          placeholder="Enter line name"
-                          className="text-sm"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-sm">Direction</Label>
-                        <Select value={lineDirection} onValueChange={(value: typeof lineDirection) => setLineDirection(value)}>
-                          <SelectTrigger className="text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="left-to-right">Left to Right →</SelectItem>
-                            <SelectItem value="right-to-left">Right to Left ←</SelectItem>
-                            <SelectItem value="top-to-bottom">Top to Bottom ↓</SelectItem>
-                            <SelectItem value="bottom-to-top">Bottom to Top ↑</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="space-y-3 p-3 bg-white rounded border">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium">Line Setup</Label>
+                      <Input
+                        value={lineName}
+                        onChange={(e) => setLineName(e.target.value)}
+                        placeholder="Line name"
+                        className="text-sm h-8"
+                      />
                     </div>
 
-                    {selectedAnalyticForConfig === 'in-out-counting' && (
-                      <div className="space-y-2">
-                        <Label className="text-sm">Count Type</Label>
-                        <Select value={countType} onValueChange={(value: typeof countType) => setCountType(value)}>
-                          <SelectTrigger className="text-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Direction</Label>
+                        <Select value={lineDirection} onValueChange={(value: typeof lineDirection) => setLineDirection(value)}>
+                          <SelectTrigger className="text-xs h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="people">People</SelectItem>
-                            <SelectItem value="vehicles">Vehicles</SelectItem>
-                            <SelectItem value="objects">Objects</SelectItem>
+                            <SelectItem value="left-to-right">Left→Right</SelectItem>
+                            <SelectItem value="right-to-left">Right→Left</SelectItem>
+                            <SelectItem value="top-to-bottom">Top→Bottom</SelectItem>
+                            <SelectItem value="bottom-to-top">Bottom→Top</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    )}
 
-                    <div className="space-y-2">
-                      <Label className="text-sm">Line Color</Label>
-                      <div className="flex flex-wrap gap-2">
+                      {selectedAnalyticForConfig === 'in-out-counting' && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">Count Type</Label>
+                          <Select value={countType} onValueChange={(value: typeof countType) => setCountType(value)}>
+                            <SelectTrigger className="text-xs h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="people">People</SelectItem>
+                              <SelectItem value="vehicles">Vehicles</SelectItem>
+                              <SelectItem value="objects">Objects</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs">Color</Label>
+                      <div className="flex gap-1">
                         {colors.map(color => (
                           <button
                             key={color}
                             onClick={() => setLineColor(color)}
-                            className={`w-5 h-5 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
+                            className={`w-6 h-6 rounded border-2 ${lineColor === color ? 'border-black' : 'border-gray-300'}`}
                             style={{ backgroundColor: color }}
                           />
                         ))}
@@ -562,129 +592,140 @@ const ConfigureAnalytics = () => {
                     <Button
                       onClick={startDrawingLine}
                       disabled={!lineName || isDrawingLine}
-                      className="w-full"
+                      className="w-full h-8 text-xs"
                       size="sm"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Start Drawing Line
+                      <Plus className="h-3 w-3 mr-1" />
+                      Start Drawing
                     </Button>
                   </div>
                 )}
 
-                {/* Saved Positions List - Improved Layout */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Saved Positions</Label>
+                {/* Saved Lines List - Better UI */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">Saved Lines</Label>
+                    <Badge variant="secondary" className="text-xs">
+                      {ptzPositions.filter(pos => pos.analyticsType === selectedAnalyticForConfig).reduce((acc, pos) => acc + pos.analyticsLines.length, 0)}
+                    </Badge>
+                  </div>
                   
-                  {ptzPositions.filter(pos => pos.analyticsType === selectedAnalyticForConfig).length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No positions saved for this analytics</p>
-                  ) : (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="max-h-48 overflow-y-auto space-y-1 border rounded p-2 bg-white">
+                    {ptzPositions
+                      .filter(pos => pos.analyticsType === selectedAnalyticForConfig)
+                      .map((position) => 
+                        position.analyticsLines.map((line, lineIndex) => (
+                          <div key={line.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs border">
+                            <div 
+                              className="w-3 h-3 rounded-full border"
+                              style={{ backgroundColor: line.color }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{line.name}</div>
+                              <div className="text-gray-500 text-xs">
+                                {line.direction?.replace('-', '→')} | {line.points.length} points
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleLineVisibility(position.id, line.id)}
+                              className="h-6 w-6 p-0"
+                            >
+                              {line.visible !== false ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setPtzPositions(prev => prev.map(pos => 
+                                  pos.id === position.id 
+                                    ? { ...pos, analyticsLines: pos.analyticsLines.filter(l => l.id !== line.id) }
+                                    : pos
+                                ));
+                              }}
+                              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    
+                    {ptzPositions.filter(pos => pos.analyticsType === selectedAnalyticForConfig).reduce((acc, pos) => acc + pos.analyticsLines.length, 0) === 0 && (
+                      <div className="text-center text-gray-400 py-4 text-xs">
+                        No lines saved yet
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PTZ Positions and Schedules (only for PTZ cameras) */}
+                {cameraData.isPTZ && ptzPositions.filter(pos => pos.analyticsType === selectedAnalyticForConfig).length > 0 && (
+                  <div className="space-y-2 p-3 bg-blue-50 rounded border">
+                    <Label className="text-xs font-medium">PTZ Schedules</Label>
+                    <div className="max-h-32 overflow-y-auto space-y-1">
                       {ptzPositions
                         .filter(pos => pos.analyticsType === selectedAnalyticForConfig)
-                        .map((position, index) => (
-                          <div key={position.id} className="p-2 border rounded bg-gray-50">
+                        .map((position) => (
+                          <div key={position.id} className="p-2 bg-white rounded border text-xs">
                             <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs px-1 py-0">
-                                  {index + 1}
-                                </Badge>
-                                <span className="font-medium text-sm truncate max-w-[120px]">
-                                  {position.name}
-                                </span>
-                              </div>
+                              <span className="font-medium truncate">{position.name}</span>
                               <Button 
-                                variant="ghost" 
                                 size="sm" 
-                                onClick={() => deletePosition(position.id)}
-                                className="h-6 w-6 p-0"
+                                variant="outline"
+                                className="h-5 text-xs px-2"
+                                onClick={() => {
+                                  setCurrentSchedule({
+                                    id: position.id,
+                                    name: `Schedule ${position.schedules.length + 1}`,
+                                    startTime: '09:00',
+                                    endTime: '17:00',
+                                    daysOfWeek: [],
+                                    enabled: true
+                                  });
+                                  setIsScheduleModalOpen(true);
+                                }}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Clock className="h-2 w-2 mr-1" />
+                                Add
                               </Button>
                             </div>
                             
-                            {cameraData.isPTZ && (
-                              <div className="text-xs text-muted-foreground mb-1">
-                                Pan: {position.position.pan}° | Tilt: {position.position.tilt}° | Zoom: {position.zoom}x
+                            {position.schedules.map(schedule => (
+                              <div key={schedule.id} className="flex items-center gap-1 p-1 bg-gray-50 rounded text-xs">
+                                <Checkbox
+                                  checked={schedule.enabled}
+                                  onCheckedChange={(checked) => {
+                                    setPtzPositions(prev => prev.map(pos => 
+                                      pos.id === position.id 
+                                        ? {
+                                            ...pos, 
+                                            schedules: pos.schedules.map(s => 
+                                              s.id === schedule.id ? { ...s, enabled: checked as boolean } : s
+                                            )
+                                          }
+                                        : pos
+                                    ));
+                                  }}
+                                  className="h-3 w-3"
+                                />
+                                <span className="flex-1 truncate">{schedule.name}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => deleteSchedule(position.id, schedule.id)}
+                                  className="h-4 w-4 p-0 text-red-500"
+                                >
+                                  <Trash2 className="h-2 w-2" />
+                                </Button>
                               </div>
-                            )}
-
-                            {position.analyticsLines.length > 0 && (
-                              <div className="text-xs text-muted-foreground mb-2">
-                                <span className="font-medium">Lines:</span> {position.analyticsLines.map(line => line.name).join(', ')}
-                              </div>
-                            )}
-
-                            {/* Schedule Management (only for PTZ cameras) - Compact Layout */}
-                            {cameraData.isPTZ && (
-                              <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <Label className="text-xs">Schedules ({position.schedules.length})</Label>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className="h-6 text-xs px-2"
-                                    onClick={() => {
-                                      setCurrentSchedule({
-                                        id: position.id,
-                                        name: `Schedule ${position.schedules.length + 1}`,
-                                        startTime: '09:00',
-                                        endTime: '17:00',
-                                        daysOfWeek: [],
-                                        enabled: true
-                                      });
-                                      setIsScheduleModalOpen(true);
-                                    }}
-                                  >
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    Add
-                                  </Button>
-                                </div>
-
-                                {position.schedules.map(schedule => (
-                                  <div key={schedule.id} className="flex items-center gap-1 p-1 bg-white rounded text-xs border">
-                                    <Checkbox
-                                      checked={schedule.enabled}
-                                      onCheckedChange={(checked) => {
-                                        setPtzPositions(prev => prev.map(pos => 
-                                          pos.id === position.id 
-                                            ? {
-                                                ...pos, 
-                                                schedules: pos.schedules.map(s => 
-                                                  s.id === schedule.id ? { ...s, enabled: checked as boolean } : s
-                                                )
-                                              }
-                                            : pos
-                                        ));
-                                      }}
-                                      className="h-3 w-3"
-                                    />
-                                    <span className="flex-1 truncate max-w-[80px]">{schedule.name}</span>
-                                    <span className="text-xs text-gray-500">
-                                      {schedule.startTime}-{schedule.endTime}
-                                    </span>
-                                    <Badge variant="outline" className="text-xs px-1 py-0">
-                                      {schedule.daysOfWeek.length === 7 ? 'Daily' : 
-                                       schedule.daysOfWeek.length === 0 ? 'No days' :
-                                       schedule.daysOfWeek.length <= 2 ? schedule.daysOfWeek.join(', ') : 
-                                       `${schedule.daysOfWeek.length}d`}
-                                    </Badge>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      onClick={() => deleteSchedule(position.id, schedule.id)}
-                                      className="h-4 w-4 p-0"
-                                    >
-                                      <Trash2 className="h-2 w-2" />
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            ))}
                           </div>
                         ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
