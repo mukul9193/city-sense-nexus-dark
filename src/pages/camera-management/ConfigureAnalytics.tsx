@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Camera, Settings, ArrowLeft, Target, Plus, Trash2, Clock, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
+import { Camera, Settings, ArrowLeft, Target, Plus, Trash2, Clock, ZoomIn, ZoomOut, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface Point {
@@ -74,6 +74,9 @@ const ConfigureAnalytics = () => {
     daysOfWeek: [],
     enabled: true
   });
+
+  // Add new state for summary view
+  const [showSummary, setShowSummary] = useState(false);
 
   const analytics = [
     { id: 'frs', name: 'Face Recognition System (FRS)', needsLines: false },
@@ -313,8 +316,171 @@ const ConfigureAnalytics = () => {
     navigate('/camera-management');
   };
 
+  const handleShowSummary = () => {
+    setShowSummary(true);
+  };
+
+  const getSummaryData = () => {
+    const configuredAnalytics = selectedAnalytics.map((analyticId: string) => {
+      const analytic = analytics.find(a => a.id === analyticId);
+      const positions = ptzPositions.filter(pos => pos.analyticsType === analyticId);
+      const totalLines = positions.reduce((acc, pos) => acc + pos.analyticsLines.length, 0);
+      const totalSchedules = positions.reduce((acc, pos) => acc + pos.schedules.length, 0);
+      
+      return {
+        name: analytic?.name || 'Unknown',
+        positions: positions.length,
+        lines: totalLines,
+        schedules: totalSchedules
+      };
+    });
+    
+    return configuredAnalytics;
+  };
+
   if (!cameraData || !selectedAnalytics) {
     return <div>Loading...</div>;
+  }
+
+  if (showSummary) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Configuration Summary</h1>
+          <Badge variant="outline">
+            {cameraData.name} ({cameraData.isPTZ ? 'PTZ' : 'Static'})
+          </Badge>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              Camera Configuration Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Camera Details */}
+            <div className="grid md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label className="font-semibold">Camera Name</Label>
+                <p className="text-sm">{cameraData.name}</p>
+              </div>
+              <div>
+                <Label className="font-semibold">Camera Type</Label>
+                <p className="text-sm">{cameraData.isPTZ ? 'PTZ Camera' : 'Static Camera'}</p>
+              </div>
+              <div>
+                <Label className="font-semibold">IP Address</Label>
+                <p className="text-sm">{cameraData.ip}:{cameraData.port}</p>
+              </div>
+              <div>
+                <Label className="font-semibold">Location</Label>
+                <p className="text-sm">{cameraData.location}</p>
+              </div>
+            </div>
+
+            {/* Analytics Summary */}
+            <div className="space-y-4">
+              <Label className="font-semibold text-lg">Configured Analytics</Label>
+              <div className="grid gap-4">
+                {getSummaryData().map((analytic, index) => (
+                  <div key={index} className="p-4 border rounded-lg bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium">{analytic.name}</h3>
+                      <Badge variant="secondary">
+                        {analytic.positions > 0 ? 'Configured' : 'Not Configured'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Positions:</span> {analytic.positions}
+                      </div>
+                      <div>
+                        <span className="font-medium">Lines:</span> {analytic.lines}
+                      </div>
+                      {cameraData.isPTZ && (
+                        <div>
+                          <span className="font-medium">Schedules:</span> {analytic.schedules}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Detailed Configuration */}
+            {ptzPositions.length > 0 && (
+              <div className="space-y-4">
+                <Label className="font-semibold text-lg">Detailed Configuration</Label>
+                <div className="max-h-96 overflow-y-auto space-y-3">
+                  {ptzPositions.map((position) => (
+                    <div key={position.id} className="p-3 border rounded-lg bg-gray-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{position.name}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {analytics.find(a => a.id === position.analyticsType)?.name}
+                        </Badge>
+                      </div>
+                      
+                      {cameraData.isPTZ && (
+                        <div className="text-xs text-gray-600 mb-2">
+                          Pan: {position.position.pan}° | Tilt: {position.position.tilt}° | Zoom: {position.zoom}x
+                        </div>
+                      )}
+
+                      {position.analyticsLines.length > 0 && (
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium">Lines:</Label>
+                          {position.analyticsLines.map((line) => (
+                            <div key={line.id} className="flex items-center gap-2 text-xs p-1 bg-white rounded">
+                              <div 
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: line.color }}
+                              />
+                              <span>{line.name}</span>
+                              <span className="text-gray-500">({line.points.length} points)</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {position.schedules.length > 0 && (
+                        <div className="space-y-1 mt-2">
+                          <Label className="text-xs font-medium">Schedules:</Label>
+                          {position.schedules.map((schedule) => (
+                            <div key={schedule.id} className="text-xs p-1 bg-white rounded">
+                              <span className="font-medium">{schedule.name}</span> - 
+                              <span className="ml-1">{schedule.startTime} to {schedule.endTime}</span>
+                              <div className="text-gray-500 text-xs">
+                                {schedule.daysOfWeek.join(', ')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-between pt-4">
+          <Button variant="outline" onClick={() => setShowSummary(false)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Configuration
+          </Button>
+          <Button onClick={handleSaveConfiguration} className="bg-green-600 hover:bg-green-700">
+            <Camera className="h-4 w-4 mr-2" />
+            Submit Configuration
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -327,12 +493,12 @@ const ConfigureAnalytics = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* LEFT SIDE - Camera View (640x480) */}
+        {/* LEFT SIDE - Camera View (640x360) */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Camera className="h-5 w-5" />
-              Camera View (640x480)
+              Camera View (640x360)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -381,23 +547,23 @@ const ConfigureAnalytics = () => {
               </div>
             )}
 
-            {/* Camera Frame - 640x480 */}
+            {/* Camera Frame - 640x360 */}
             <div className="relative border-2 rounded-lg overflow-hidden shadow-lg">
               <div 
                 className={`relative ${isDrawingLine ? 'cursor-crosshair' : 'cursor-default'}`}
                 onClick={handleCanvasClick}
                 style={{ 
                   width: '640px', 
-                  height: '480px',
+                  height: '360px',
                   maxWidth: '100%',
-                  aspectRatio: '640/480'
+                  aspectRatio: '640/360'
                 }}
               >
                 <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white text-xl font-semibold border-4 border-gray-600">
                   <div className="text-center">
                     <div className="text-2xl mb-2">📹</div>
                     <div>Camera Feed</div>
-                    <div className="text-sm opacity-75 mt-1">640 × 480</div>
+                    <div className="text-sm opacity-75 mt-1">640 × 360</div>
                   </div>
                 </div>
                 
@@ -737,9 +903,9 @@ const ConfigureAnalytics = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Camera Setup
         </Button>
-        <Button onClick={handleSaveConfiguration}>
-          <Camera className="h-4 w-4 mr-2" />
-          Save Configuration
+        <Button onClick={handleShowSummary}>
+          <CheckCircle2 className="h-4 w-4 mr-2" />
+          Review Configuration
         </Button>
       </div>
 
