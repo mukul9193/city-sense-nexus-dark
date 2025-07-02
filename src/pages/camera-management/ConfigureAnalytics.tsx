@@ -327,12 +327,12 @@ const ConfigureAnalytics = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* LEFT SIDE - HD Camera View (Full 1280x720) */}
+        {/* LEFT SIDE - Camera View (640x480) */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Camera className="h-5 w-5" />
-              HD Camera View (1280x720)
+              Camera View (640x480)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -381,23 +381,23 @@ const ConfigureAnalytics = () => {
               </div>
             )}
 
-            {/* HD Camera Frame - Full 1280x720 */}
+            {/* Camera Frame - 640x480 */}
             <div className="relative border-2 rounded-lg overflow-hidden shadow-lg">
               <div 
                 className={`relative ${isDrawingLine ? 'cursor-crosshair' : 'cursor-default'}`}
                 onClick={handleCanvasClick}
                 style={{ 
-                  width: '1280px', 
-                  height: '720px',
+                  width: '640px', 
+                  height: '480px',
                   maxWidth: '100%',
-                  aspectRatio: '1280/720'
+                  aspectRatio: '640/480'
                 }}
               >
                 <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white text-xl font-semibold border-4 border-gray-600">
                   <div className="text-center">
                     <div className="text-2xl mb-2">📹</div>
-                    <div>HD Camera Feed</div>
-                    <div className="text-sm opacity-75 mt-1">1280 × 720</div>
+                    <div>Camera Feed</div>
+                    <div className="text-sm opacity-75 mt-1">640 × 480</div>
                   </div>
                 </div>
                 
