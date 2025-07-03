@@ -77,6 +77,7 @@ const ConfigureAnalytics = () => {
 
   // Add new state for summary view
   const [showSummary, setShowSummary] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const analytics = [
     { id: 'frs', name: 'Face Recognition System (FRS)', needsLines: false },
@@ -312,8 +313,7 @@ const ConfigureAnalytics = () => {
 
   const handleSaveConfiguration = () => {
     console.log('Saving camera configuration:', { cameraData, selectedAnalytics, ptzPositions });
-    // Navigate back or to success page
-    navigate('/camera-management');
+    setShowConfirmation(true);
   };
 
   const handleShowSummary = () => {
@@ -340,6 +340,32 @@ const ConfigureAnalytics = () => {
 
   if (!cameraData || !selectedAnalytics) {
     return <div>Loading...</div>;
+  }
+
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-6">
+            <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle2 className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Configuration Submitted Successfully!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Your camera analytics configuration has been saved and is now active.
+            </p>
+            <Button 
+              onClick={() => navigate('/camera-management')} 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Return to Camera Management
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (showSummary) {
@@ -380,92 +406,27 @@ const ConfigureAnalytics = () => {
               </div>
             </div>
 
-            {/* Analytics Summary */}
+            {/* Analytics Summary - Simplified */}
             <div className="space-y-4">
               <Label className="font-semibold text-lg">Configured Analytics</Label>
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                 {getSummaryData().map((analytic, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">{analytic.name}</h3>
-                      <Badge variant="secondary">
-                        {analytic.positions > 0 ? 'Configured' : 'Not Configured'}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm text-gray-600">
-                      <div>
-                        <span className="font-medium">Positions:</span> {analytic.positions}
+                  <div key={index} className="p-4 border rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-gray-900">{analytic.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">
+                          {analytic.positions} {analytic.positions === 1 ? 'Position' : 'Positions'}
+                        </span>
+                        <Badge variant={analytic.positions > 0 ? 'default' : 'secondary'}>
+                          {analytic.positions > 0 ? 'Configured' : 'Not Configured'}
+                        </Badge>
                       </div>
-                      <div>
-                        <span className="font-medium">Lines:</span> {analytic.lines}
-                      </div>
-                      {cameraData.isPTZ && (
-                        <div>
-                          <span className="font-medium">Schedules:</span> {analytic.schedules}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Detailed Configuration */}
-            {ptzPositions.length > 0 && (
-              <div className="space-y-4">
-                <Label className="font-semibold text-lg">Detailed Configuration</Label>
-                <div className="max-h-96 overflow-y-auto space-y-3">
-                  {ptzPositions.map((position) => (
-                    <div key={position.id} className="p-3 border rounded-lg bg-gray-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{position.name}</h4>
-                        <Badge variant="outline" className="text-xs">
-                          {analytics.find(a => a.id === position.analyticsType)?.name}
-                        </Badge>
-                      </div>
-                      
-                      {cameraData.isPTZ && (
-                        <div className="text-xs text-gray-600 mb-2">
-                          Pan: {position.position.pan}° | Tilt: {position.position.tilt}° | Zoom: {position.zoom}x
-                        </div>
-                      )}
-
-                      {position.analyticsLines.length > 0 && (
-                        <div className="space-y-1">
-                          <Label className="text-xs font-medium">Lines:</Label>
-                          {position.analyticsLines.map((line) => (
-                            <div key={line.id} className="flex items-center gap-2 text-xs p-1 bg-white rounded">
-                              <div 
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: line.color }}
-                              />
-                              <span>{line.name}</span>
-                              <span className="text-gray-500">({line.points.length} points)</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {position.schedules.length > 0 && (
-                        <div className="space-y-1 mt-2">
-                          <Label className="text-xs font-medium">Schedules:</Label>
-                          {position.schedules.map((schedule) => (
-                            <div key={schedule.id} className="text-xs p-1 bg-white rounded">
-                              <span className="font-medium">{schedule.name}</span> - 
-                              <span className="ml-1">{schedule.startTime} to {schedule.endTime}</span>
-                              <div className="text-gray-500 text-xs">
-                                {schedule.daysOfWeek.join(', ')}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
