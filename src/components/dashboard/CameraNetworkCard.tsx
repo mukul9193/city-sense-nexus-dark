@@ -64,13 +64,15 @@ const CameraNetworkCard = () => {
             <div className="flex items-center justify-between">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Badge 
-                    variant="default" 
-                    className="bg-green-500 hover:bg-green-600 cursor-pointer transition-colors"
-                  >
-                    <Camera className="h-3 w-3 mr-1" />
-                    {activeCameras.length} Online
-                  </Badge>
+                  <div className="cursor-pointer transition-colors">
+                    <Badge 
+                      variant="default" 
+                      className="bg-green-500 hover:bg-green-600"
+                    >
+                      <Camera className="h-3 w-3 mr-1" />
+                      {activeCameras.length} Online
+                    </Badge>
+                  </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-80" align="start">
                   <div className="space-y-3">
@@ -118,13 +120,15 @@ const CameraNetworkCard = () => {
             <div className="flex items-center justify-between">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Badge 
-                    variant="destructive"
-                    className="cursor-pointer hover:bg-destructive/90 transition-colors"
-                  >
-                    <CameraOff className="h-3 w-3 mr-1" />
-                    {inactiveCameras.length} Offline
-                  </Badge>
+                  <div className="cursor-pointer transition-colors">
+                    <Badge 
+                      variant="destructive"
+                      className="hover:bg-destructive/90"
+                    >
+                      <CameraOff className="h-3 w-3 mr-1" />
+                      {inactiveCameras.length} Offline
+                    </Badge>
+                  </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-80" align="start">
                   <div className="space-y-3">
