@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cameras } from "@/lib/placeholder-data";
-import { Video, Camera, CameraOff, Eye, Users, Clock, AlertTriangle } from "lucide-react";
+import { Video, Camera, CameraOff, Eye, Clock, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Camera as CameraType } from "@/lib/types";
 import CameraDetailsDialog from "./CameraDetailsDialog";
@@ -74,40 +75,50 @@ const CameraNetworkCard = () => {
                     </Badge>
                   </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-80" align="start">
+                <PopoverContent className="w-[600px]" align="start">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Camera className="h-4 w-4 text-green-500" />
-                      <h4 className="font-medium text-green-600">Active Cameras ({activeCameras.length})</h4>
+                      <h4 className="font-medium text-green-600">Online Cameras ({activeCameras.length})</h4>
                     </div>
                     
-                    <div className="max-h-64 overflow-y-auto space-y-2">
-                      {activeCameras.map((camera) => (
-                        <div 
-                          key={camera.id}
-                          className="p-2 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          onClick={() => handleCameraClick(camera)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-sm">{camera.name}</p>
-                              <p className="text-xs text-muted-foreground">{camera.location}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="default" className="bg-green-500 text-xs">
-                                Live
-                              </Badge>
-                              <Eye className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          </div>
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            Resolution: {camera.resolution} • FPS: {camera.fps}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {activeCameras.length === 0 && (
+                    {activeCameras.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Camera Name</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {activeCameras.map((camera) => (
+                            <TableRow key={camera.id}>
+                              <TableCell className="font-medium">{camera.name}</TableCell>
+                              <TableCell className="text-muted-foreground">{camera.location}</TableCell>
+                              <TableCell>
+                                <Badge variant="default" className="bg-green-500">
+                                  <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-1" />
+                                  Live
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCameraClick(camera)}
+                                  className="h-7"
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
                       <p className="text-center text-muted-foreground text-sm py-4">
                         No active cameras found
                       </p>
@@ -130,48 +141,53 @@ const CameraNetworkCard = () => {
                     </Badge>
                   </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-80" align="start">
+                <PopoverContent className="w-[700px]" align="start">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <CameraOff className="h-4 w-4 text-red-500" />
                       <h4 className="font-medium text-red-600">Offline Cameras ({inactiveCameras.length})</h4>
                     </div>
                     
-                    <div className="max-h-64 overflow-y-auto space-y-2">
-                      {inactiveCameras.map((camera) => (
-                        <div 
-                          key={camera.id}
-                          className="p-2 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 cursor-pointer transition-colors"
-                          onClick={() => handleCameraClick(camera)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-sm">{camera.name}</p>
-                              <p className="text-xs text-muted-foreground">{camera.location}</p>
-                            </div>
-                            <Badge 
-                              variant={camera.status === 'Warning' ? 'secondary' : 'destructive'} 
-                              className="text-xs"
-                            >
-                              {camera.status}
-                            </Badge>
-                          </div>
-                          
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center gap-1 text-xs text-red-600">
-                              <AlertTriangle className="h-3 w-3" />
-                              <span>Reason: {getOfflineReason(camera)}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              <span>Last active: {getLastActiveTime(camera)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {inactiveCameras.length === 0 && (
+                    {inactiveCameras.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Camera Name</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Reason</TableHead>
+                            <TableHead>Last Active</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {inactiveCameras.map((camera) => (
+                            <TableRow key={camera.id} className="bg-red-50">
+                              <TableCell className="font-medium">{camera.name}</TableCell>
+                              <TableCell className="text-muted-foreground">{camera.location}</TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={camera.status === 'Warning' ? 'secondary' : 'destructive'}
+                                >
+                                  {camera.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1 text-sm text-red-600">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  <span>{getOfflineReason(camera)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{getLastActiveTime(camera)}</span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
                       <p className="text-center text-muted-foreground text-sm py-4">
                         All cameras are online
                       </p>
