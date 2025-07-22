@@ -2,17 +2,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cameras } from "@/lib/placeholder-data";
-import { Video, Camera, CameraOff, Eye, Users } from "lucide-react";
+import { Video, Camera, CameraOff, Eye, Users, Clock, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Camera as CameraType } from "@/lib/types";
 import CameraDetailsDialog from "./CameraDetailsDialog";
-import CameraNetworkModal from "./CameraNetworkModal";
 
 const CameraNetworkCard = () => {
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [networkModalOpen, setNetworkModalOpen] = useState(false);
 
   const activeCameras = cameras.filter(cam => cam.status === 'Online');
   const inactiveCameras = cameras.filter(cam => cam.status === 'Offline' || cam.status === 'Warning');
@@ -34,9 +33,20 @@ const CameraNetworkCard = () => {
     // TODO: Implement delete functionality
   };
 
-  const handleViewFrame = (camera: CameraType) => {
-    console.log('View frame for camera:', camera);
-    // TODO: Implement frame viewing
+  const getOfflineReason = (camera: CameraType) => {
+    const reasons = [
+      "Network connection timeout",
+      "Authentication failed", 
+      "Power supply disconnected",
+      "Camera hardware failure",
+      "RTSP stream unavailable"
+    ];
+    return reasons[Math.floor(Math.random() * reasons.length)];
+  };
+
+  const getLastActiveTime = (camera: CameraType) => {
+    const times = ["2 hours ago", "5 hours ago", "1 day ago", "3 days ago", "1 week ago"];
+    return times[Math.floor(Math.random() * times.length)];
   };
 
   return (
@@ -52,29 +62,121 @@ const CameraNetworkCard = () => {
           {/* Camera Status Summary */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                <Camera className="h-3 w-3 mr-1" />
-                {activeCameras.length} Online
-              </Badge>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Badge 
+                    variant="default" 
+                    className="bg-green-500 hover:bg-green-600 cursor-pointer transition-colors"
+                  >
+                    <Camera className="h-3 w-3 mr-1" />
+                    {activeCameras.length} Online
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="start">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Camera className="h-4 w-4 text-green-500" />
+                      <h4 className="font-medium text-green-600">Active Cameras ({activeCameras.length})</h4>
+                    </div>
+                    
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {activeCameras.map((camera) => (
+                        <div 
+                          key={camera.id}
+                          className="p-2 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                          onClick={() => handleCameraClick(camera)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-sm">{camera.name}</p>
+                              <p className="text-xs text-muted-foreground">{camera.location}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="default" className="bg-green-500 text-xs">
+                                Live
+                              </Badge>
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          </div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            Resolution: {camera.resolution} • FPS: {camera.fps}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {activeCameras.length === 0 && (
+                      <p className="text-center text-muted-foreground text-sm py-4">
+                        No active cameras found
+                      </p>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="flex items-center justify-between">
-              <Badge variant="destructive">
-                <CameraOff className="h-3 w-3 mr-1" />
-                {inactiveCameras.length} Offline
-              </Badge>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Badge 
+                    variant="destructive"
+                    className="cursor-pointer hover:bg-destructive/90 transition-colors"
+                  >
+                    <CameraOff className="h-3 w-3 mr-1" />
+                    {inactiveCameras.length} Offline
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="start">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CameraOff className="h-4 w-4 text-red-500" />
+                      <h4 className="font-medium text-red-600">Offline Cameras ({inactiveCameras.length})</h4>
+                    </div>
+                    
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {inactiveCameras.map((camera) => (
+                        <div 
+                          key={camera.id}
+                          className="p-2 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 cursor-pointer transition-colors"
+                          onClick={() => handleCameraClick(camera)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-sm">{camera.name}</p>
+                              <p className="text-xs text-muted-foreground">{camera.location}</p>
+                            </div>
+                            <Badge 
+                              variant={camera.status === 'Warning' ? 'secondary' : 'destructive'} 
+                              className="text-xs"
+                            >
+                              {camera.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center gap-1 text-xs text-red-600">
+                              <AlertTriangle className="h-3 w-3" />
+                              <span>Reason: {getOfflineReason(camera)}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span>Last active: {getLastActiveTime(camera)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {inactiveCameras.length === 0 && (
+                      <p className="text-center text-muted-foreground text-sm py-4">
+                        All cameras are online
+                      </p>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
-          
-          {/* View All Button */}
-          <Button 
-            onClick={() => setNetworkModalOpen(true)}
-            variant="outline" 
-            className="w-full"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View All Cameras
-          </Button>
         </CardContent>
       </Card>
 
@@ -85,14 +187,6 @@ const CameraNetworkCard = () => {
         onOpenChange={setDialogOpen}
         onEdit={handleEdit}
         onDelete={handleDelete}
-      />
-
-      {/* Camera Network Modal */}
-      <CameraNetworkModal
-        open={networkModalOpen}
-        onOpenChange={setNetworkModalOpen}
-        onEditCamera={handleEdit}
-        onViewFrame={handleViewFrame}
       />
     </>
   );
