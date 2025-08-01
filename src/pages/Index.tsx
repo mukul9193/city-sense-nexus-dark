@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { recentDetections } from "@/lib/placeholder-data";
 import { Shield, Activity, Zap } from "lucide-react";
@@ -12,6 +11,7 @@ import SurveillanceModules from "@/components/dashboard/SurveillanceModules";
 import CameraNetworkCard from "@/components/dashboard/CameraNetworkCard";
 import DashboardToggle from "@/components/dashboard/DashboardToggle";
 import OverviewEvents from "@/components/dashboard/OverviewEvents";
+import CompactOverviewDashboard from "@/components/dashboard/CompactOverviewDashboard";
 
 const Index = () => {
   const [isDetailedView, setIsDetailedView] = useState(true);
@@ -28,47 +28,47 @@ const Index = () => {
         <DashboardToggle isDetailedView={isDetailedView} onToggle={setIsDetailedView} />
       </div>
 
-      {/* Top Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Enhanced Camera Network */}
-        <CameraNetworkCard />
-
-        {/* Active Threats */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Threats</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">{activeThreats}</div>
-            <div className="text-sm text-muted-foreground mt-1">
-              <Badge variant="destructive" className="text-xs">
-                High Priority
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* System Efficiency */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Efficiency</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{systemEfficiency}%</div>
-            <div className="text-sm text-muted-foreground mt-1">
-              <Badge variant="outline" className="text-xs">
-                Optimal Performance
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Conditional Content Based on View Mode */}
       {isDetailedView ? (
         <>
+          {/* Top Metrics */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Enhanced Camera Network */}
+            <CameraNetworkCard />
+
+            {/* Active Threats */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Threats</CardTitle>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-500">{activeThreats}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  <Badge variant="destructive" className="text-xs">
+                    High Priority
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* System Efficiency */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">System Efficiency</CardTitle>
+                <Zap className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-500">{systemEfficiency}%</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  <Badge variant="outline" className="text-xs">
+                    Optimal Performance
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Face Recognition Overview */}
           <FaceRecognitionOverview />
 
@@ -86,11 +86,8 @@ const Index = () => {
         </>
       ) : (
         <>
-          {/* Overview Events Grid */}
-          <OverviewEvents />
-
-          {/* Surveillance Modules */}
-          <SurveillanceModules />
+          {/* Compact Overview Dashboard */}
+          <CompactOverviewDashboard />
         </>
       )}
     </div>
