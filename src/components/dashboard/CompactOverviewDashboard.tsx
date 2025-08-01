@@ -105,33 +105,6 @@ const CompactOverviewDashboard = () => {
     );
   };
 
-  const LiveSnapshot = ({ events, type }: any) => {
-    const latestEvent = events[0];
-    return (
-      <div className="relative">
-        <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden mb-2">
-          {type === 'FRS' && latestEvent?.photoUrl ? (
-            <img 
-              src={latestEvent.photoUrl} 
-              alt="Live Detection" 
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <Camera className="h-8 w-8 text-gray-400" />
-            </div>
-          )}
-          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
-            ● LIVE
-          </div>
-          <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-            {latestEvent?.timestamp || 'No Data'} | {latestEvent?.location || 'N/A'}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const RecentEventsTable = ({ events, type }: any) => {
     return (
       <div className="space-y-2">
@@ -223,7 +196,6 @@ const CompactOverviewDashboard = () => {
             color="text-blue-500"
           />
           <CardContent className="flex-1 p-0 space-y-4">
-            <LiveSnapshot events={faceRecognitionEvents} type="FRS" />
             <RecentEventsTable events={faceRecognitionEvents} type="FRS" />
             <div className="h-24">
               <ResponsiveContainer width="100%" height="100%">
@@ -255,7 +227,6 @@ const CompactOverviewDashboard = () => {
             color="text-green-500"
           />
           <CardContent className="flex-1 p-0 space-y-4">
-            <LiveSnapshot events={objectDetectionEvents} type="Object" />
             <RecentEventsTable events={objectDetectionEvents} type="Object" />
             <div className="h-24">
               <ResponsiveContainer width="100%" height="100%">
@@ -279,7 +250,6 @@ const CompactOverviewDashboard = () => {
             color="text-purple-500"
           />
           <CardContent className="flex-1 p-0 space-y-4">
-            <LiveSnapshot events={anprEvents} type="ANPR" />
             <RecentEventsTable events={anprEvents} type="ANPR" />
             <div className="h-24">
               <ResponsiveContainer width="100%" height="100%">
@@ -311,7 +281,6 @@ const CompactOverviewDashboard = () => {
             color="text-orange-500"
           />
           <CardContent className="flex-1 p-0 space-y-4">
-            <LiveSnapshot events={borderJumpingEvents} type="Border" />
             <RecentEventsTable events={borderJumpingEvents} type="Border" />
             <div className="h-24">
               <ResponsiveContainer width="100%" height="100%">
