@@ -7,13 +7,13 @@ import { cameras } from "@/lib/placeholder-data";
 import { Edit, Trash2, Eye, Settings } from "lucide-react";
 import { Camera as CameraType } from "@/lib/types";
 import { useState } from "react";
-import CameraEditDialog from "@/components/dashboard/CameraEditDialog";
+import { useNavigate } from "react-router-dom";
 import CameraDetailsDialog from "@/components/dashboard/CameraDetailsDialog";
 import { cn } from "@/lib/utils";
 
 const CameraConfiguration = () => {
+  const navigate = useNavigate();
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   const getStatusVariant = (status: 'Online' | 'Offline' | 'Warning') => {
@@ -61,8 +61,7 @@ const CameraConfiguration = () => {
   };
 
   const handleEdit = (camera: CameraType) => {
-    setSelectedCamera(camera);
-    setEditDialogOpen(true);
+    navigate(`/camera-management/edit?id=${camera.id}`);
   };
 
   const handleView = (camera: CameraType) => {
@@ -73,12 +72,6 @@ const CameraConfiguration = () => {
   const handleDelete = (camera: CameraType) => {
     console.log('Delete camera:', camera);
     // TODO: Implement delete functionality
-  };
-
-  const handleSaveCamera = (updatedCamera: CameraType) => {
-    console.log('Save camera:', updatedCamera);
-    setEditDialogOpen(false);
-    // TODO: Implement save functionality
   };
 
   return (
@@ -182,14 +175,6 @@ const CameraConfiguration = () => {
           </Table>
         </CardContent>
       </Card>
-
-      {/* Edit Camera Dialog */}
-      <CameraEditDialog
-        camera={selectedCamera}
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        onSave={handleSaveCamera}
-      />
 
       {/* Camera Details Dialog */}
       <CameraDetailsDialog
