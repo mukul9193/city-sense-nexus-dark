@@ -8,9 +8,10 @@ const Header = () => {
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: Shield },
-    { name: "Camera Status", path: "/camera-management/status", icon: Camera },
-    { name: "Map View", path: "/camera-management/map", icon: Camera },
-    { name: "Add Camera", path: "/camera-management/add", icon: Camera },
+    { name: "Camera Status", path: "/camera-status", icon: Camera },
+    { name: "Camera Configuration", path: "/camera-configuration", icon: Settings },
+    { name: "Map View", path: "/map-view", icon: Camera },
+    { name: "Add Camera", path: "/add-camera", icon: Camera },
   ];
 
   return (
