@@ -17,7 +17,8 @@ import {
   Save,
   Users,
   Target,
-  Activity
+  Activity,
+  Camera
 } from "lucide-react";
 
 interface Point {
@@ -157,7 +158,7 @@ const AnalyticsEditDialog = ({ camera, open, onOpenChange }: AnalyticsEditDialog
                     }`}
                     onClick={() => handleAnalyticsToggle(analytic.id)}
                   >
-                    <Checkbox checked={isSelected} readOnly />
+                    <Checkbox checked={isSelected} />
                     <Icon className={`h-5 w-5 text-${analytic.color}-500`} />
                     <span className="font-medium">{analytic.name}</span>
                   </div>
